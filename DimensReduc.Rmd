@@ -1,0 +1,456 @@
+---
+title: "R Notebook"
+output:
+  html_document:
+    df_print: paged
+editor_options:
+  markdown:
+    wrap: 72
+---
+
+```{r}
+library(tidyverse)
+library(corrr)
+library(ggplot2)
+library(lme4)
+library(lmerTest)
+library(ggeffects)
+library(sjPlot)
+library(psych)
+library(readr)
+```
+
+```{r}
+setwd("/Volumes/Research Project/Preference Falsification/Analysis/")
+longDf <- read.csv("./output/PFfullDf.csv")
+longDf$partyN <- as.factor(longDf$partyN)
+longDf$Rep <- as.factor(longDf$Rep)
+contrasts(longDf$Rep) <- contr.sum(3)
+longDf$RepN <- as.factor(longDf$RepN)
+longDf$RepN <- relevel(longDf$RepN,"In")
+longDf$Info <- as.factor(longDf$Info)
+contrasts(longDf$Info) <- contr.sum(2)
+longDf$partyN <- as.factor(longDf$partyN)
+contrasts(longDf$partyN) <- contr.sum(2)
+
+longDf <- longDf[order(longDf$issues,longDf$subID),]
+
+demDf <- subset(longDf, partyN == "Dem")
+repDf <- subset(longDf, partyN == "Rep")
+
+indDiffDf <- longDf[unique(longDf$subID),]
+```
+
+```{r, include=FALSE}
+setwd("~/Google Drive/Volumes/Research Project/Preference Falsification/Study 2 Analysis/")
+indDiffDf2 <- read.csv("./output/PFindDiffDf2.csv")
+longDf2 <- read.csv("./output/PFfullDf2.csv")
+issExpDf2 <- read.csv("./output/issueAgDf2.csv")
+longDf2$partyN <- as.factor(longDf2$partyN)
+longDf2$Rep <- as.factor(longDf2$Rep)
+longDf2$Rep <- factor(longDf2$Rep, c("Non","Rep","Dem"))
+longDf2$Rep <- relevel(longDf2$Rep,"Non")
+contrasts(longDf2$Rep) <- contr.sum(3)
+longDf2$RepN <- as.factor(longDf2$RepN)
+longDf2$RepN <- relevel(longDf2$RepN,"In")
+longDf2$Info <- as.factor(longDf2$Info)
+contrasts(longDf2$Info) <- contr.sum(2)
+longDf2$partyN <- as.factor(longDf2$partyN)
+contrasts(longDf2$partyN) <- contr.sum(2)
+
+longDf2 <- longDf2[order(longDf2$issues,longDf2$subID),]
+
+demDf <- subset(longDf2, partyN == "Dem")
+repDf <- subset(longDf2, partyN == "Rep")
+longDf2 <- longDf2[order(longDf2$subID, longDf2$issues),]
+longDf2$polStrength <- abs(longDf2$Polit - 4)
+
+indDiffDf2 <- longDf2[unique(longDf2$subID),]
+```
+
+```{r}
+RepIssues <- read.csv("~/Downloads/ROPE/BayesRep_2022_0120.csv")
+DemIssues <- read.csv("~/Downloads/ROPE/BayesDem_2022_0120.csv")
+BothIssues <- rbind(RepIssues,DemIssues)
+
+issuesnames <- longDf[match(1:100, longDf$issues),c("issues","Final.Phrasing")]
+
+BothIssues <- merge(BothIssues, issuesnames, by = "issues")
+
+party <- c("rep","dem")
+dir <- c("conform","double")
+condition <- c("Out","Non")
+study <- c(1,2)
+for(s in study){
+  for(r in party){
+    for(d in dir){
+          curIss <- as.numeric(BothIssues$issues[BothIssues$party == r & BothIssues$direction == d & BothIssues$study == s])
+          assign(paste0("S",s,"_",r,"_",d),curIss)
+      for(c in condition){
+          curIss <- as.numeric(BothIssues$issues[BothIssues$party == r & BothIssues$direction == d & BothIssues$condition == c & BothIssues$study == s])
+          assign(paste0("S",s,"_",r,"_",c,"_",d),curIss)
+      }
+    }
+  }
+}
+```
+
+
+
+```{r}
+longDfc<- longDf[c("subID","RepN","partyN","issues","eval")]
+longDfc <- longDfc[order(longDfc$issues),]
+wideDf <- longDfc %>% pivot_wider(names_from = issues, values_from = eval)
+```
+
+```{r}
+repDf <- subset(wideDf, partyN=="Rep")
+demDf <- subset(wideDf, partyN=="Dem")
+```
+
+# For loop
+
+```{r}
+s<-1
+  for(r in party){
+    
+        if(r == "dem"){
+          df<-get("demDf")
+          rt <- "Dem"
+        }else if(r == "rep"){
+          df<-get("repDf")
+          rt <- "Rep"
+        }
+    
+    for(d in dir){
+      for(c in condition){
+        
+        issVec <- get(paste0("S",s,"_",r,"_",c,"_",d))
+        
+        if(length(issVec)==0){
+          next
+        }
+        
+        screeP <- scree(df[,issVec+3])
+        assign(paste0("S",s,"_",r,"_",c,"_",d,"_","scree"),screeP)
+        
+        EFA <- fa(df[,issVec+3], missing = TRUE, nfactors=1)
+        assign(paste0("S",s,"_",r,"_",c,"_",d,"_","EFA"),EFA)
+        
+        EFA_Loadings <- data.frame(FA1=EFA$weights[,1],
+                                  issues=unique(longDf$Final.Phrasing[longDf$issues == issVec])
+                   #issues=longDf$Final.Phrasing[match(unique(longDf$issues), issVec)]
+        )
+        assign(paste0("S",s,"_",r,"_",c,"_",d,"_","Loadings"),EFA_Loadings)
+        
+        if(r=="rep"){
+                  Scores <- data.frame(subID=df$subID,
+                              FA1 = as.numeric(-EFA$scores[,1])
+                              )
+        }else if(r=="dem"){
+                            Scores <- data.frame(subID=df$subID,
+                              FA1 = as.numeric(EFA$scores[,1])
+                              )
+        }
+
+        Scores <- merge(Scores, indDiffDf[indDiffDf$partyN==rt,c("subID","RepN","Info","WSC","MLAM","Extra","Neur","SCS.priv","SCS.pub","SCS.sa","NFC","SGO.wt","SGO.st","SGO.sw","CSEpriv","CSEpub","CSEid","affPol","Polit")], by = "subID")
+        assign(paste0("S",s,"_",r,"_",c,"_",d,"_","Scores"),Scores)
+
+FA1cors <- correlation::correlation(Scores$FA1, Scores[, c("WSC","MLAM","Extra","Neur","SCS.priv","SCS.pub","SCS.sa","NFC","SGO.wt","SGO.st","SGO.sw","CSEpriv","CSEpub","CSEid","affPol","Polit")])
+assign(paste0("S",s,"_",r,"_",c,"_",d,"_","FA1cors"),FA1cors)
+
+aovFA1 <- ez::ezANOVA(Scores, dv=FA1, wid=as.factor(subID), between=as.factor(RepN) )
+assign(paste0("S",s,"_",r,"_",c,"_",d,"_","aovFA1"),aovFA1)
+condFA1 <- ez::ezPlot(Scores, FA1, wid=subID, between=RepN, x=.(RepN))
+assign(paste0("S",s,"_",r,"_",c,"_",d,"_","condFA1"),condFA1)
+        
+          
+      }
+    }
+  }
+
+```
+
+
+```{r}
+cor.test(S1_dem_Out_conform_Scores$FA1, S1_dem_Out_double_Scores$FA1)
+cor.test(S1_rep_Out_conform_Scores$FA1, S1_rep_Out_double_Scores$FA1)
+cor.test(S1_rep_Non_conform_Scores$FA1, S1_rep_Non_double_Scores$FA1)
+```
+
+```{r}
+S1_dem_Out_conform_condFA1
+S1_dem_Out_double_condFA1
+
+S1_rep_Out_conform_condFA1
+S1_rep_Out_double_condFA1
+
+S1_dem_Non_conform_condFA1
+#S1_dem_Non_double_condFA1
+
+S1_rep_Non_conform_condFA1
+S1_rep_Non_double_condFA1
+```
+
+```{r}
+S1_dem_Out_conform_FA1cors
+S1_dem_Out_double_FA1cors
+
+S1_rep_Out_conform_FA1cors
+S1_rep_Out_double_FA1cors
+
+S1_dem_Non_conform_FA1cors
+#S1_dem_Non_double_FA1cors
+
+S1_rep_Non_conform_FA1cors
+S1_rep_Non_double_FA1cors
+```
+
+```{r}
+S1_dem_Out_conform_Loadings[order(S1_dem_Out_conform_Loadings$FA1),]
+S1_dem_Out_double_Loadings[order(S1_dem_Out_double_Loadings$FA1),]
+
+S1_rep_Out_conform_Loadings[order(S1_rep_Out_conform_Loadings$FA1),]
+S1_rep_Out_double_Loadings[order(S1_rep_Out_double_Loadings$FA1),]
+
+S1_dem_Non_conform_Loadings[order(S1_dem_Non_conform_Loadings$FA1),]
+#S1_dem_Non_double_Loadings
+
+S1_rep_Non_conform_Loadings
+S1_rep_Non_double_Loadings
+```
+
+```{r}
+oFA<-rbind(data.frame(subID = S1_dem_Out_conform_Scores$subID, oFA = S1_dem_Out_conform_Scores$FA1),
+           data.frame(subID = S1_rep_Out_conform_Scores$subID, oFA = S1_rep_Out_conform_Scores$FA1)
+)
+nFA<-rbind(data.frame(subID = S1_dem_Non_conform_Scores$subID, nFA = S1_dem_Non_conform_Scores$FA1),
+           data.frame(subID = S1_rep_Non_conform_Scores$subID, nFA = S1_rep_Non_conform_Scores$FA1)
+)
+FA <- merge(oFA,nFA, by="subID")
+
+longDf <- merge(longDf, FA[c("subID","nFA","oFA")],by="subID")
+library(lmerTest)
+
+indDiffDf <- longDf[!duplicated(longDf$subID),]
+cor.test(indDiffDf$oFA, indDiffDf$WSC)
+cor.test(indDiffDf$oFA, indDiffDf$SGO.wt)
+
+cor.test(indDiffDf$nFA, indDiffDf$WSC)
+cor.test(indDiffDf$oFA, indDiffDf$affPol)
+cor.test(indDiffDf$nFA, indDiffDf$affPol)
+longDf$bootInOut <- longDf$bootEvalIn - longDf$bootEvalOut
+m<-lmer(scale(eval) ~ RepN*FA1*bootInOut + (bootInOut|subID) + (1|issues),data=longDf)
+summary(m)
+ggpredict(m, c("bootInOut","FA1")) %>% plot()
+```
+```{r}
+m <- lm(oFA ~ RepN*MLAM, data = indDiffDf)
+summary(m)
+ggpredict(m, c("MLAM","RepN")) %>% plot()
+
+m <- lm(oFA ~ RepN*CSEid, data = indDiffDf)
+summary(m)
+ggpredict(m, c("CSEid","RepN")) %>% plot()
+
+m <- lm(oFA ~ RepN+Info, data = indDiffDf)
+summary(m)
+ggpredict(m, c("RepN")) %>% plot()
+
+m <- lm(nFA ~ RepN*MLAM, data = indDiffDf)
+summary(m)
+ggpredict(m, c("MLAM","RepN")) %>% plot()
+
+m <- lm(nFA ~ RepN*CSEid, data = indDiffDf)
+summary(m)
+ggpredict(m, c("CSEid","RepN")) %>% plot()
+
+m <- lm(nFA ~ RepN+Info, data = indDiffDf)
+summary(m)
+ggpredict(m, c("RepN")) %>% plot()
+```
+
+```{r}
+oFA<-rbind(data.frame(subID = S1_dem_Out_double_Scores$subID, oFA = S1_dem_Out_double_Scores$FA1),
+           data.frame(subID = S1_rep_Out_double_Scores$subID, oFA = S1_rep_Out_double_Scores$FA1)
+)
+ #merge(oFA, by="subID")
+
+longDf <- merge(longDf, oFA[c("subID","oFA")],by="subID")
+library(lmerTest)
+
+indDiffDf <- longDf[!duplicated(longDf$subID),]
+cor.test(indDiffDf$oFA, indDiffDf$WSC)
+cor.test(indDiffDf$oFA, indDiffDf$affPol)
+longDf$bootInOut <- longDf$bootEvalIn - longDf$bootEvalOut
+m<-lmer(scale(eval) ~ RepN*oFA*bootInOut + (bootInOut|subID) + (1|issues),data=longDf)
+summary(m)
+ggpredict(m, c("bootInOut","oFA")) %>% plot()
+```
+```{r}
+m <- lm(oFA ~ RepN*WSC, data = indDiffDf)
+summary(m)
+ggpredict(m, c("WSC","RepN")) %>% plot()
+
+m <- lm(oFA ~ RepN*MLAM, data = indDiffDf)
+summary(m)
+ggpredict(m, c("MLAM","RepN")) %>% plot()
+
+m <- lm(oFA ~ RepN*CSEid, data = indDiffDf)
+summary(m)
+ggpredict(m, c("CSEid","RepN")) %>% plot()
+
+m <- lm(oFA ~ RepN+Info, data = indDiffDf)
+summary(m)
+ggpredict(m, c("RepN")) %>% plot()
+```
+
+# Prepare Study 2 stuff
+
+```{r}
+longDf2c<- longDf2[c("subID","RepN","partyN","issues","eval")]
+longDf2c <- longDf2c[order(longDf2c$issues),]
+wideDf2 <- longDf2c %>% pivot_wider(names_from = issues, values_from = eval)
+```
+
+```{r}
+repDf2 <- subset(wideDf2, partyN=="Rep")
+demDf2 <- subset(wideDf2, partyN=="Dem")
+```
+
+# For loop Study 2
+
+```{r}
+s<-2
+issues2 <- longDf2[match(1:100, longDf2$issues),]
+
+  for(r in party){
+    
+        if(r == "dem"){
+          df<-get("demDf2")
+          rt <- "Dem"
+        }else if(r == "rep"){
+          df<-get("repDf2")
+          rt <- "Rep"
+        }
+    
+    for(d in dir){
+      for(c in condition){
+        
+        issVec <- get(paste0("S",s,"_",r,"_",c,"_",d))
+        
+        if(length(issVec)==0){
+          next
+        }
+        
+        screeP <- scree(df[,issVec+3])
+        assign(paste0("S",s,"_",r,"_",c,"_",d,"_","scree"),screeP)
+        
+        if((sum(screeP$fv > 1) > 1)){
+          nf <- 2
+        }else{
+          nf <- 1
+        }
+        EFA <- fa(df[,issVec+3], missing = TRUE, nfactors=nf)
+        assign(paste0("S",s,"_",r,"_",c,"_",d,"_","EFA"),EFA)
+        
+        EFA_Loadings <- data.frame(FA1=EFA$weights[,1],
+                                  issues=issues2$label.x[match(issVec, issues2$issues)]
+                   #issues=longDf$Final.Phrasing[match(unique(longDf$issues), issVec)]
+        )
+        assign(paste0("S",s,"_",r,"_",c,"_",d,"_","Loadings"),EFA_Loadings)
+        
+        if(r=="rep"){
+                  Scores <- data.frame(subID=df$subID,
+                              FA1 = as.numeric(-EFA$scores[,1])
+                              )
+        }else if(r=="dem"){
+                            Scores <- data.frame(subID=df$subID,
+                              FA1 = as.numeric(EFA$scores[,1])
+                              )
+        }
+
+        Scores <- merge(Scores, indDiffDf[indDiffDf$partyN==rt,c("subID","RepN","Info","WSC","MLAM","Extra","Neur","SCS.priv","SCS.pub","SCS.sa","NFC","SGO.wt","SGO.st","SGO.sw","CSEpriv","CSEpub","CSEid","affPol","Polit")], by = "subID")
+        assign(paste0("S",s,"_",r,"_",c,"_",d,"_","Scores"),Scores)
+
+FA1cors <- correlation::correlation(Scores$FA1, Scores[, c("WSC","MLAM","Extra","Neur","SCS.priv","SCS.pub","SCS.sa","NFC","SGO.wt","SGO.st","SGO.sw","CSEpriv","CSEpub","CSEid","affPol","Polit")])
+assign(paste0("S",s,"_",r,"_",c,"_",d,"_","FA1cors"),FA1cors)
+
+aovFA1 <- ez::ezANOVA(Scores, dv=FA1, wid=as.factor(subID), between=as.factor(RepN) )
+assign(paste0("S",s,"_",r,"_",c,"_",d,"_","aovFA1"),aovFA1)
+condFA1 <- ez::ezPlot(Scores, FA1, wid=subID, between=RepN, x=.(RepN))
+assign(paste0("S",s,"_",r,"_",c,"_",d,"_","condFA1"),condFA1)
+        
+          
+      }
+    }
+  }
+
+```
+
+
+
+
+```{r}
+cor.test(S2_dem_Out_conform_Scores$FA1, S2_dem_Out_double_Scores$FA1)
+cor.test(S2_dem_Non_conform_Scores$FA1, S2_dem_Non_double_Scores$FA1)
+cor.test(S2_rep_Out_conform_Scores$FA1, S2_rep_Out_double_Scores$FA1)
+cor.test(S2_rep_Non_conform_Scores$FA1, S2_rep_Non_double_Scores$FA1)
+```
+
+```{r}
+S2_dem_Out_conform_condFA1
+S2_dem_Out_double_condFA1
+
+S2_rep_Out_conform_condFA1
+S2_rep_Out_double_condFA1
+
+S2_dem_Non_conform_condFA1
+S2_dem_Non_double_condFA1
+
+S2_rep_Non_conform_condFA1
+S2_rep_Non_double_condFA1
+```
+
+```{r}
+S2_dem_Out_conform_aovFA1$ANOVA
+S2_dem_Out_double_aovFA1$ANOVA
+
+S2_rep_Out_conform_aovFA1$ANOVA
+S2_rep_Out_double_aovFA1$ANOVA
+
+S2_dem_Non_conform_aovFA1$ANOVA
+S2_dem_Non_double_aovFA1$ANOVA
+
+S2_rep_Non_conform_aovFA1$ANOVA
+S2_rep_Non_double_aovFA1$ANOVA
+```
+
+
+```{r}
+S2_dem_Out_conform_FA1cors
+S2_dem_Out_double_FA1cors
+
+S2_rep_Out_conform_FA1cors
+S2_rep_Out_double_FA1cors
+
+S2_dem_Non_conform_FA1cors
+S2_dem_Non_double_FA1cors
+
+S2_rep_Non_conform_FA1cors
+S2_rep_Non_double_FA1cors
+```
+
+```{r}
+S2_dem_Out_conform_Loadings[order(S2_dem_Out_conform_Loadings$FA1),]
+S2_dem_Out_double_Loadings[order(S2_dem_Out_double_Loadings$FA1),]
+
+S2_rep_Out_conform_Loadings[order(S2_rep_Out_conform_Loadings$FA1),]
+S2_rep_Out_double_Loadings[order(S2_rep_Out_double_Loadings$FA1),]
+
+S2_dem_Non_conform_Loadings[order(S2_dem_Non_conform_Loadings$FA1),]
+S2_dem_Non_conform_Loadings[order(S2_dem_Non_conform_Loadings$FA1),]
+
+S2_rep_Non_conform_Loadings
+S2_rep_Non_double_Loadings
+```
