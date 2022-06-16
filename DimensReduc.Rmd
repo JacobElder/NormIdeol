@@ -18,6 +18,10 @@ library(ggeffects)
 library(sjPlot)
 library(psych)
 library(readr)
+
+library(magrittr)
+library(dplyr)
+library(ggpubr)
 ```
 
 ```{r}
@@ -69,32 +73,8 @@ indDiffDf2 <- longDf2[unique(longDf2$subID),]
 ```
 
 ```{r}
-RepIssues <- read.csv("~/Downloads/ROPE/BayesRep_2022_0120.csv")
-DemIssues <- read.csv("~/Downloads/ROPE/BayesDem_2022_0120.csv")
-BothIssues <- rbind(RepIssues,DemIssues)
-
-issuesnames <- longDf[match(1:100, longDf$issues),c("issues","Final.Phrasing")]
-
-BothIssues <- merge(BothIssues, issuesnames, by = "issues")
-
-party <- c("rep","dem")
-dir <- c("conform","double")
-condition <- c("Out","Non")
-study <- c(1,2)
-for(s in study){
-  for(r in party){
-    for(d in dir){
-          curIss <- as.numeric(BothIssues$issues[BothIssues$party == r & BothIssues$direction == d & BothIssues$study == s])
-          assign(paste0("S",s,"_",r,"_",d),curIss)
-      for(c in condition){
-          curIss <- as.numeric(BothIssues$issues[BothIssues$party == r & BothIssues$direction == d & BothIssues$condition == c & BothIssues$study == s])
-          assign(paste0("S",s,"_",r,"_",c,"_",d),curIss)
-      }
-    }
-  }
-}
+issDf <- longDf[!duplicated(longDf$issues),]
 ```
-
 
 
 ```{r}
@@ -104,208 +84,80 @@ wideDf <- longDfc %>% pivot_wider(names_from = issues, values_from = eval)
 ```
 
 ```{r}
-repDf <- subset(wideDf, partyN=="Rep")
-demDf <- subset(wideDf, partyN=="Dem")
+longDfc<- longDf[c("subID","RepN","partyN","issues","eval")]
+longDfc <- longDfc[order(longDfc$issues),]
+
+wideDfforissues <- longDfc %>% pivot_wider(names_from = subID, values_from = eval, id_cols = issues)
 ```
 
-# For loop
-
 ```{r}
-s<-1
-  for(r in party){
-    
-        if(r == "dem"){
-          df<-get("demDf")
-          rt <- "Dem"
-        }else if(r == "rep"){
-          df<-get("repDf")
-          rt <- "Rep"
-        }
-    
-    for(d in dir){
-      for(c in condition){
-        
-        issVec <- get(paste0("S",s,"_",r,"_",c,"_",d))
-        
-        if(length(issVec)==0){
-          next
-        }
-        
-        screeP <- scree(df[,issVec+3])
-        assign(paste0("S",s,"_",r,"_",c,"_",d,"_","scree"),screeP)
-        
-        EFA <- fa(df[,issVec+3], missing = TRUE, nfactors=1)
-        assign(paste0("S",s,"_",r,"_",c,"_",d,"_","EFA"),EFA)
-        
-        EFA_Loadings <- data.frame(FA1=EFA$weights[,1],
-                                  issues=unique(longDf$Final.Phrasing[longDf$issues == issVec])
-                   #issues=longDf$Final.Phrasing[match(unique(longDf$issues), issVec)]
-        )
-        assign(paste0("S",s,"_",r,"_",c,"_",d,"_","Loadings"),EFA_Loadings)
-        
-        if(r=="rep"){
-                  Scores <- data.frame(subID=df$subID,
-                              FA1 = as.numeric(-EFA$scores[,1])
-                              )
-        }else if(r=="dem"){
-                            Scores <- data.frame(subID=df$subID,
-                              FA1 = as.numeric(EFA$scores[,1])
-                              )
-        }
+mds <- wideDfforissues %>%
+  select(2:length(.)) %>%
+  dist() %>%          
+  MASS::isoMDS(k=2) %>%
+  .$points %>%
+  as_tibble()
+colnames(mds) <- c("Dim.1", "Dim.2")
 
-        Scores <- merge(Scores, indDiffDf[indDiffDf$partyN==rt,c("subID","RepN","Info","WSC","MLAM","Extra","Neur","SCS.priv","SCS.pub","SCS.sa","NFC","SGO.wt","SGO.st","SGO.sw","CSEpriv","CSEpub","CSEid","affPol","Polit")], by = "subID")
-        assign(paste0("S",s,"_",r,"_",c,"_",d,"_","Scores"),Scores)
-
-FA1cors <- correlation::correlation(Scores$FA1, Scores[, c("WSC","MLAM","Extra","Neur","SCS.priv","SCS.pub","SCS.sa","NFC","SGO.wt","SGO.st","SGO.sw","CSEpriv","CSEpub","CSEid","affPol","Polit")])
-assign(paste0("S",s,"_",r,"_",c,"_",d,"_","FA1cors"),FA1cors)
-
-aovFA1 <- ez::ezANOVA(Scores, dv=FA1, wid=as.factor(subID), between=as.factor(RepN) )
-assign(paste0("S",s,"_",r,"_",c,"_",d,"_","aovFA1"),aovFA1)
-condFA1 <- ez::ezPlot(Scores, FA1, wid=subID, between=RepN, x=.(RepN))
-assign(paste0("S",s,"_",r,"_",c,"_",d,"_","condFA1"),condFA1)
-        
-          
-      }
-    }
-  }
-
+ggscatter(mds, x = "Dim.1", y = "Dim.2", 
+          label = issDf$label,
+          font.label = c(5, "bold", "black"),
+          size = 1,
+          repel = TRUE)
 ```
 
 
 ```{r}
-cor.test(S1_dem_Out_conform_Scores$FA1, S1_dem_Out_double_Scores$FA1)
-cor.test(S1_rep_Out_conform_Scores$FA1, S1_rep_Out_double_Scores$FA1)
-cor.test(S1_rep_Non_conform_Scores$FA1, S1_rep_Non_double_Scores$FA1)
+library(factoextra)
+library(NbClust)
+# Elbow method
+fviz_nbclust(mds[1:2], kmeans, method = "wss") +
+    geom_vline(xintercept = 4, linetype = 2)+
+  labs(subtitle = "Elbow method")
+
+# Elbow recommends 4
+
+# Silhouette method
+fviz_nbclust(mds[1:2], kmeans, method = "silhouette")+
+  labs(subtitle = "Silhouette method")
+
+# Silhouette recommends 2
+
+# Gap statistic
+# nboot = 50 to keep the function speedy. 
+# recommended value: nboot= 500 for your analysis.
+# Use verbose = FALSE to hide computing progression.
+set.seed(123)
+fviz_nbclust(mds[1:2], kmeans, nstart = 25,  method = "gap_stat", nboot = 50)+
+  labs(subtitle = "Gap statistic method")
+
+# Gap recommends 2
+
+# K-means clustering
+clust <- kmeans(mds, 2)$cluster %>%
+  as.factor()
+mds <- mds %>%
+  mutate(groups = clust)
+# Plot and color by groups
+ggscatter(mds, x = "Dim.1", y = "Dim.2", 
+          label = issDf$label,
+          font.label = c(5, "bold", "black"),
+          color = "groups",
+          palette = "jco",
+          size = 1, 
+          ellipse = TRUE,
+          ellipse.type = "convex",
+          repel = TRUE)
+
+ggsave("~/Desktop/MDS_Study1.png", height=6, width=12, units="in")
+mdsMat <- as.matrix(dist(mds[1:2]))
 ```
+# Study 2
 
 ```{r}
-S1_dem_Out_conform_condFA1
-S1_dem_Out_double_condFA1
-
-S1_rep_Out_conform_condFA1
-S1_rep_Out_double_condFA1
-
-S1_dem_Non_conform_condFA1
-#S1_dem_Non_double_condFA1
-
-S1_rep_Non_conform_condFA1
-S1_rep_Non_double_condFA1
+issDf2 <- longDf2[!duplicated(longDf2$issues),]
 ```
 
-```{r}
-S1_dem_Out_conform_FA1cors
-S1_dem_Out_double_FA1cors
-
-S1_rep_Out_conform_FA1cors
-S1_rep_Out_double_FA1cors
-
-S1_dem_Non_conform_FA1cors
-#S1_dem_Non_double_FA1cors
-
-S1_rep_Non_conform_FA1cors
-S1_rep_Non_double_FA1cors
-```
-
-```{r}
-S1_dem_Out_conform_Loadings[order(S1_dem_Out_conform_Loadings$FA1),]
-S1_dem_Out_double_Loadings[order(S1_dem_Out_double_Loadings$FA1),]
-
-S1_rep_Out_conform_Loadings[order(S1_rep_Out_conform_Loadings$FA1),]
-S1_rep_Out_double_Loadings[order(S1_rep_Out_double_Loadings$FA1),]
-
-S1_dem_Non_conform_Loadings[order(S1_dem_Non_conform_Loadings$FA1),]
-#S1_dem_Non_double_Loadings
-
-S1_rep_Non_conform_Loadings
-S1_rep_Non_double_Loadings
-```
-
-```{r}
-oFA<-rbind(data.frame(subID = S1_dem_Out_conform_Scores$subID, oFA = S1_dem_Out_conform_Scores$FA1),
-           data.frame(subID = S1_rep_Out_conform_Scores$subID, oFA = S1_rep_Out_conform_Scores$FA1)
-)
-nFA<-rbind(data.frame(subID = S1_dem_Non_conform_Scores$subID, nFA = S1_dem_Non_conform_Scores$FA1),
-           data.frame(subID = S1_rep_Non_conform_Scores$subID, nFA = S1_rep_Non_conform_Scores$FA1)
-)
-FA <- merge(oFA,nFA, by="subID")
-
-longDf <- merge(longDf, FA[c("subID","nFA","oFA")],by="subID")
-library(lmerTest)
-
-indDiffDf <- longDf[!duplicated(longDf$subID),]
-cor.test(indDiffDf$oFA, indDiffDf$WSC)
-cor.test(indDiffDf$oFA, indDiffDf$SGO.wt)
-
-cor.test(indDiffDf$nFA, indDiffDf$WSC)
-cor.test(indDiffDf$oFA, indDiffDf$affPol)
-cor.test(indDiffDf$nFA, indDiffDf$affPol)
-longDf$bootInOut <- longDf$bootEvalIn - longDf$bootEvalOut
-m<-lmer(scale(eval) ~ RepN*FA1*bootInOut + (bootInOut|subID) + (1|issues),data=longDf)
-summary(m)
-ggpredict(m, c("bootInOut","FA1")) %>% plot()
-```
-```{r}
-m <- lm(oFA ~ RepN*MLAM, data = indDiffDf)
-summary(m)
-ggpredict(m, c("MLAM","RepN")) %>% plot()
-
-m <- lm(oFA ~ RepN*CSEid, data = indDiffDf)
-summary(m)
-ggpredict(m, c("CSEid","RepN")) %>% plot()
-
-m <- lm(oFA ~ RepN+Info, data = indDiffDf)
-summary(m)
-ggpredict(m, c("RepN")) %>% plot()
-
-m <- lm(nFA ~ RepN*MLAM, data = indDiffDf)
-summary(m)
-ggpredict(m, c("MLAM","RepN")) %>% plot()
-
-m <- lm(nFA ~ RepN*CSEid, data = indDiffDf)
-summary(m)
-ggpredict(m, c("CSEid","RepN")) %>% plot()
-
-m <- lm(nFA ~ RepN+Info, data = indDiffDf)
-summary(m)
-ggpredict(m, c("RepN")) %>% plot()
-```
-
-```{r}
-oFA<-rbind(data.frame(subID = S1_dem_Out_double_Scores$subID, oFA = S1_dem_Out_double_Scores$FA1),
-           data.frame(subID = S1_rep_Out_double_Scores$subID, oFA = S1_rep_Out_double_Scores$FA1)
-)
- #merge(oFA, by="subID")
-
-longDf <- merge(longDf, oFA[c("subID","oFA")],by="subID")
-library(lmerTest)
-
-indDiffDf <- longDf[!duplicated(longDf$subID),]
-cor.test(indDiffDf$oFA, indDiffDf$WSC)
-cor.test(indDiffDf$oFA, indDiffDf$affPol)
-longDf$bootInOut <- longDf$bootEvalIn - longDf$bootEvalOut
-m<-lmer(scale(eval) ~ RepN*oFA*bootInOut + (bootInOut|subID) + (1|issues),data=longDf)
-summary(m)
-ggpredict(m, c("bootInOut","oFA")) %>% plot()
-```
-```{r}
-m <- lm(oFA ~ RepN*WSC, data = indDiffDf)
-summary(m)
-ggpredict(m, c("WSC","RepN")) %>% plot()
-
-m <- lm(oFA ~ RepN*MLAM, data = indDiffDf)
-summary(m)
-ggpredict(m, c("MLAM","RepN")) %>% plot()
-
-m <- lm(oFA ~ RepN*CSEid, data = indDiffDf)
-summary(m)
-ggpredict(m, c("CSEid","RepN")) %>% plot()
-
-m <- lm(oFA ~ RepN+Info, data = indDiffDf)
-summary(m)
-ggpredict(m, c("RepN")) %>% plot()
-```
-
-# Prepare Study 2 stuff
 
 ```{r}
 longDf2c<- longDf2[c("subID","RepN","partyN","issues","eval")]
@@ -314,143 +166,70 @@ wideDf2 <- longDf2c %>% pivot_wider(names_from = issues, values_from = eval)
 ```
 
 ```{r}
-repDf2 <- subset(wideDf2, partyN=="Rep")
-demDf2 <- subset(wideDf2, partyN=="Dem")
-```
-
-# For loop Study 2
-
-```{r}
-s<-2
-issues2 <- longDf2[match(1:100, longDf2$issues),]
-
-  for(r in party){
-    
-        if(r == "dem"){
-          df<-get("demDf2")
-          rt <- "Dem"
-        }else if(r == "rep"){
-          df<-get("repDf2")
-          rt <- "Rep"
-        }
-    
-    for(d in dir){
-      for(c in condition){
-        
-        issVec <- get(paste0("S",s,"_",r,"_",c,"_",d))
-        
-        if(length(issVec)==0){
-          next
-        }
-        
-        screeP <- scree(df[,issVec+3])
-        assign(paste0("S",s,"_",r,"_",c,"_",d,"_","scree"),screeP)
-        
-        if((sum(screeP$fv > 1) > 1)){
-          nf <- 2
-        }else{
-          nf <- 1
-        }
-        EFA <- fa(df[,issVec+3], missing = TRUE, nfactors=nf)
-        assign(paste0("S",s,"_",r,"_",c,"_",d,"_","EFA"),EFA)
-        
-        EFA_Loadings <- data.frame(FA1=EFA$weights[,1],
-                                  issues=issues2$label.x[match(issVec, issues2$issues)]
-                   #issues=longDf$Final.Phrasing[match(unique(longDf$issues), issVec)]
-        )
-        assign(paste0("S",s,"_",r,"_",c,"_",d,"_","Loadings"),EFA_Loadings)
-        
-        if(r=="rep"){
-                  Scores <- data.frame(subID=df$subID,
-                              FA1 = as.numeric(-EFA$scores[,1])
-                              )
-        }else if(r=="dem"){
-                            Scores <- data.frame(subID=df$subID,
-                              FA1 = as.numeric(EFA$scores[,1])
-                              )
-        }
-
-        Scores <- merge(Scores, indDiffDf[indDiffDf$partyN==rt,c("subID","RepN","Info","WSC","MLAM","Extra","Neur","SCS.priv","SCS.pub","SCS.sa","NFC","SGO.wt","SGO.st","SGO.sw","CSEpriv","CSEpub","CSEid","affPol","Polit")], by = "subID")
-        assign(paste0("S",s,"_",r,"_",c,"_",d,"_","Scores"),Scores)
-
-FA1cors <- correlation::correlation(Scores$FA1, Scores[, c("WSC","MLAM","Extra","Neur","SCS.priv","SCS.pub","SCS.sa","NFC","SGO.wt","SGO.st","SGO.sw","CSEpriv","CSEpub","CSEid","affPol","Polit")])
-assign(paste0("S",s,"_",r,"_",c,"_",d,"_","FA1cors"),FA1cors)
-
-aovFA1 <- ez::ezANOVA(Scores, dv=FA1, wid=as.factor(subID), between=as.factor(RepN) )
-assign(paste0("S",s,"_",r,"_",c,"_",d,"_","aovFA1"),aovFA1)
-condFA1 <- ez::ezPlot(Scores, FA1, wid=subID, between=RepN, x=.(RepN))
-assign(paste0("S",s,"_",r,"_",c,"_",d,"_","condFA1"),condFA1)
-        
-          
-      }
-    }
-  }
-
-```
-
-
-
-
-```{r}
-cor.test(S2_dem_Out_conform_Scores$FA1, S2_dem_Out_double_Scores$FA1)
-cor.test(S2_dem_Non_conform_Scores$FA1, S2_dem_Non_double_Scores$FA1)
-cor.test(S2_rep_Out_conform_Scores$FA1, S2_rep_Out_double_Scores$FA1)
-cor.test(S2_rep_Non_conform_Scores$FA1, S2_rep_Non_double_Scores$FA1)
+longDf2c<- longDf2[c("subID","RepN","partyN","issues","eval")]
+longDf2c <- longDf2c[order(longDf2c$issues),]
+wideDfforissues2 <- longDf2c %>% pivot_wider(names_from = subID, values_from = eval, id_cols = issues)
 ```
 
 ```{r}
-S2_dem_Out_conform_condFA1
-S2_dem_Out_double_condFA1
+mds2 <- wideDfforissues2 %>%
+  select(2:length(.)) %>%
+  dist() %>%          
+  MASS::isoMDS(k=2) %>%
+  .$points %>%
+  as_tibble()
+colnames(mds2) <- c("Dim.1", "Dim.2")
 
-S2_rep_Out_conform_condFA1
-S2_rep_Out_double_condFA1
-
-S2_dem_Non_conform_condFA1
-S2_dem_Non_double_condFA1
-
-S2_rep_Non_conform_condFA1
-S2_rep_Non_double_condFA1
-```
-
-```{r}
-S2_dem_Out_conform_aovFA1$ANOVA
-S2_dem_Out_double_aovFA1$ANOVA
-
-S2_rep_Out_conform_aovFA1$ANOVA
-S2_rep_Out_double_aovFA1$ANOVA
-
-S2_dem_Non_conform_aovFA1$ANOVA
-S2_dem_Non_double_aovFA1$ANOVA
-
-S2_rep_Non_conform_aovFA1$ANOVA
-S2_rep_Non_double_aovFA1$ANOVA
+ggscatter(mds, x = "Dim.1", y = "Dim.2", 
+          label = issDf2$label.x,
+          font.label = c(5, "bold", "black"),
+          size = 1,
+          repel = TRUE)
 ```
 
 
 ```{r}
-S2_dem_Out_conform_FA1cors
-S2_dem_Out_double_FA1cors
+library(factoextra)
+library(NbClust)
+# Elbow method
+fviz_nbclust(mds2[1:2], kmeans, method = "wss") +
+    geom_vline(xintercept = 4, linetype = 2)+
+  labs(subtitle = "Elbow method")
 
-S2_rep_Out_conform_FA1cors
-S2_rep_Out_double_FA1cors
+# Elbow recommends 4
 
-S2_dem_Non_conform_FA1cors
-S2_dem_Non_double_FA1cors
+# Silhouette method
+fviz_nbclust(mds2[1:2], kmeans, method = "silhouette")+
+  labs(subtitle = "Silhouette method")
 
-S2_rep_Non_conform_FA1cors
-S2_rep_Non_double_FA1cors
-```
+# Silhouette recommends 2
 
-```{r}
-S2_dem_Out_conform_Loadings[order(S2_dem_Out_conform_Loadings$FA1),]
-S2_dem_Out_double_Loadings[order(S2_dem_Out_double_Loadings$FA1),]
+# Gap statistic
+# nboot = 50 to keep the function speedy. 
+# recommended value: nboot= 500 for your analysis.
+# Use verbose = FALSE to hide computing progression.
+set.seed(123)
+fviz_nbclust(mds2[1:2], kmeans, nstart = 25,  method = "gap_stat", nboot = 50)+
+  labs(subtitle = "Gap statistic method")
 
-S2_rep_Out_conform_Loadings[order(S2_rep_Out_conform_Loadings$FA1),]
-S2_rep_Out_double_Loadings[order(S2_rep_Out_double_Loadings$FA1),]
+# Gap recommends 2
 
-S2_dem_Non_conform_Loadings[order(S2_dem_Non_conform_Loadings$FA1),]
-S2_dem_Non_conform_Loadings[order(S2_dem_Non_conform_Loadings$FA1),]
+# K-means clustering
+clust <- kmeans(mds2, 2)$cluster %>%
+  as.factor()
+mds2 <- mds2 %>%
+  mutate(groups = clust)
+# Plot and color by groups
+ggscatter(mds2, x = "Dim.1", y = "Dim.2", 
+          label = issDf2$label.x,
+          font.label = c(5, "bold", "black"),
+          color = "groups",
+          palette = "jco",
+          size = 1, 
+          ellipse = TRUE,
+          ellipse.type = "convex",
+          repel = TRUE)
 
-S2_rep_Non_conform_Loadings
-S2_rep_Non_double_Loadings
+ggsave("~/Desktop/MDS_Study2.png", height=6, width=12, units="in")
+mdsMat <- as.matrix(dist(mds[1:2]))
 ```
