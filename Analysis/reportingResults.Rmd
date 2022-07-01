@@ -830,6 +830,20 @@ summary(m)
 ggpredict(m, c("inMinOut", "affPol")) %>% plot()
 ```
 
+```{r}
+m <- lmer( scale(eval) ~ scale(inMinOut) * Info * scale(affPol)  + ( scale(inMinOut) | subID) + (1 | issues), data = longDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m)
+ggpredict(m, c("inMinOut", "affPol", "Info")) %>% plot()
+
+m <- lmer( scale(eval) ~ scale(inMinOut) * Info * scale(affPol) + ( scale(inMinOut) | subID) + (1 | issues), data = longDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m)
+ggpredict(m, c("inMinOut", "affPol", "Info")) %>% plot()
+ggpredict(m, c("inMinOut", "Info")) %>% plot()
+ggpredict(m, c("inMinOut", "affPol")) %>% plot()
+```
+
 
 People higher in affective polarization evaluate exhibit extreme responses to information, exhibiting high approval for ingroup favored issues and high disapproval for outgroup favored issues.
 
