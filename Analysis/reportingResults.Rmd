@@ -1,0 +1,853 @@
+---
+title: "R Notebook"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r}
+library(tidyverse)
+library(corrr)
+library(ggplot2)
+library(lme4)
+library(lmerTest)
+library(ggeffects)
+library(sjPlot)
+library(rstanarm)
+library(bayestestR)
+library(insight)
+library(data.table)
+```
+
+
+```{r}
+setwd("~/Google Drive/Volumes/Research Project/Preference Falsification/Study 2 Analysis/")
+longDf2 <- fread("./output/PFfullDf2.csv")
+distDf2 <- fread("./output/distanceDf2.csv")
+longDf2$partyN <- as.factor(longDf2$partyN)
+longDf2$Rep <- as.factor(longDf2$Rep)
+longDf2$Rep <- factor(longDf2$Rep, c("Non","Rep","Dem"))
+longDf2$Rep <- relevel(longDf2$Rep,"Non")
+contrasts(longDf2$Rep) <- contr.sum(3)
+longDf2$RepN <- as.factor(longDf2$RepN)
+longDf2$RepN <- relevel(longDf2$RepN,"In")
+longDf2$Info <- as.factor(longDf2$Info)
+contrasts(longDf2$Info) <- contr.sum(2)
+longDf2$partyN <- as.factor(longDf2$partyN)
+contrasts(longDf2$partyN) <- contr.sum(2)
+demDf <- subset(longDf2, partyN == "Dem")
+repDf <- subset(longDf2, partyN == "Rep")
+longDf2$politStre <- as.factor(abs(4-longDf2$Polit))
+InfoDf2 <- subset(longDf2, Info == "Info")
+issueDf2 <- longDf2[!duplicated(longDf2$issues),]
+```
+
+```{r}
+setwd("~/Google Drive/Volumes/Research Project/Preference Falsification/Analysis/")
+longDf1 <- fread("./output/PFfullDf.csv")
+distDf1 <- fread("./output/distanceDf.csv")
+longDf1$partyN <- as.factor(longDf1$partyN)
+longDf1$Rep <- as.factor(longDf1$Rep)
+contrasts(longDf1$Rep) <- contr.sum(3)
+longDf1$RepN <- as.factor(longDf1$RepN)
+longDf1$RepN <- relevel(longDf1$RepN,"In")
+longDf1$Info <- as.factor(longDf1$Info)
+contrasts(longDf1$Info) <- contr.sum(2)
+longDf1$partyN <- as.factor(longDf1$partyN)
+contrasts(longDf1$partyN) <- contr.sum(2)
+demDf <- subset(longDf1, partyN == "Dem")
+repDf <- subset(longDf1, partyN == "Rep")
+longDf1$politStre <- as.factor(abs(4-longDf1$Polit))
+InfoDf1 <- subset(longDf1, Info == "Info")
+issueDf1 <- longDf1[!duplicated(longDf1$issues),]
+distDf1$polStrength <- as.factor(abs(4-distDf1$Polit))
+```
+
+# Similarity of Issues Predicting Similarity of Evaluations
+
+```{r}
+m <- lmer( scale(dist) ~ scale(corr) * RepN + ( scale(corr) | subID), data = distDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m)
+
+ggpredict(m, c("corr","RepN")) %>% plot()
+
+m <- lmer( scale(dist) ~ scale(corr) * RepN + ( scale(corr) | subID), data = distDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m)
+
+ggpredict(m, c("corr","RepN")) %>% plot()
+```
+
+```{r}
+m <- lmer( scale(dist) ~ scale(corr) * Info + ( scale(corr) | subID), data = distDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m)
+
+ggpredict(m, c("corr","Info")) %>% plot()
+
+m <- lmer( scale(dist) ~ scale(corr) * Info + ( scale(corr) | subID), data = distDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m)
+
+ggpredict(m, c("corr","Info")) %>% plot()
+```
+
+```{r}
+m <- lmer( scale(dist) ~ scale(corr) * scale(affPol) + ( scale(corr) | subID), data = distDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m)
+
+ggpredict(m, c("corr","affPol")) %>% plot()
+
+m <- lmer( scale(dist) ~ scale(corr) * scale(affPol) * Info + ( scale(corr) | subID), data = distDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m)
+
+ggpredict(m, c("corr","affPol","Info")) %>% plot()
+
+m <- lmer( scale(dist) ~ scale(corr) * scale(affPol) + ( scale(corr) | subID), data = distDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m)
+
+ggpredict(m, c("corr","affPol")) %>% plot()
+
+m <- lmer( scale(dist) ~ scale(corr) * scale(affPol) * Info + ( scale(corr) | subID), data = distDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m)
+
+ggpredict(m, c("corr","affPol","Info")) %>% plot()
+```
+
+Doesn't replicate for study 2 but it does if you include political strength
+
+```{r}
+m <- lmer( scale(dist) ~ scale(corr) * RepN * as.factor(polStrength) + ( scale(corr) | subID), data = distDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m)
+
+ggpredict(m, c("corr","RepN","polStrength")) %>% plot()
+
+m <- lmer( scale(dist) ~ scale(corr) * RepN * as.factor(polStrength) + ( scale(corr) | subID), data = distDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m)
+
+ggpredict(m, c("corr","RepN","polStrength")) %>% plot()
+```
+
+## Similarity and Individual Differences
+
+```{r}
+m1 <- lmer( scale(dist) ~ scale(corr) * Trump + ( scale(corr) | subID), data = distDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m1)
+
+
+
+
+m2 <- lmer( scale(dist) ~ scale(corr) * Trump + ( scale(corr) | subID), data = distDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m2)
+
+ggpredict(m1, c("corr", "Trump")) %>% plot()
+ggpredict(m2, c("corr", "Trump")) %>% plot()
+```
+
+```{r}
+m1 <- lmer( scale(dist) ~ scale(corr) * scale(WSC) + ( scale(corr) | subID), data = distDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m1)
+
+
+
+
+m2 <- lmer( scale(dist) ~ scale(corr) * scale(WSC) + ( scale(corr) | subID), data = distDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m2)
+
+ggpredict(m1, c("corr", "WSC")) %>% plot()
+ggpredict(m2, c("corr", "WSC")) %>% plot()
+```
+
+```{r}
+m1 <- lmer( scale(dist) ~ scale(corr) * scale(MLAM) + ( scale(corr) | subID), data = distDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m1)
+
+
+
+
+m2 <- lmer( scale(dist) ~ scale(corr) * scale(MLAM) + ( scale(corr) | subID), data = distDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m2)
+```
+
+```{r}
+ggpredict(m1, c("corr", "MLAM")) %>% plot()
+ggpredict(m2, c("corr", "MLAM")) %>% plot()
+```
+
+```{r}
+m1 <- lmer( scale(dist) ~ scale(corr) * scale(NFC) + ( scale(corr) | subID), data = distDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m1)
+
+
+
+
+m2 <- lmer( scale(dist) ~ scale(corr) * scale(NFC) + ( scale(corr) | subID), data = distDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m2)
+```
+
+```{r}
+ggpredict(m1, c("corr", "NFC")) %>% plot()
+ggpredict(m2, c("corr", "NFC")) %>% plot()
+```
+
+```{r}
+m1 <- lmer( scale(dist) ~ scale(corr) * scale(SGO.wt) + ( scale(corr) | subID), data = distDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m1)
+
+
+
+
+m2 <- lmer( scale(dist) ~ scale(corr) * scale(SGO.wt) + ( scale(corr) | subID), data = distDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m2)
+
+ggpredict(m1, c("corr", "SGO.wt")) %>% plot()
+ggpredict(m2, c("corr", "SGO.wt")) %>% plot()
+```
+
+```{r}
+m1 <- lmer( scale(dist) ~ scale(corr) * scale(SGO.st) + ( scale(corr) | subID), data = distDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m1)
+
+
+
+
+m2 <- lmer( scale(dist) ~ scale(corr) * scale(SGO.st) + ( scale(corr) | subID), data = distDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m2)
+
+ggpredict(m1, c("corr", "SGO.st")) %>% plot()
+ggpredict(m2, c("corr", "SGO.st")) %>% plot()
+```
+
+# Bayes
+
+## Study 1
+
+```{r}
+all.neg <- function(x) -1*abs(x)
+set.seed(1)
+uids <- unique(longDf1$issues)
+df1Issues <- longDf1[!duplicated(longDf1$Final.Phrasing),]
+bNames <- c("issues", "ROPE_low", "ROPE_high", "coefNon", "pdNon", "oneTailNon", "twoTailNon", "CI_l_non", "CI_h_non", "ROPE_Non", "ROPE_NonL", "ROPE_NonH", "BF0_Non", "BFless_Non", "BFgreat_Non", "BFcenter_Non", "coefOut", "pdOut", "oneTailOut", "twoTailOut", "CI_l_out", "CI_h_out", "ROPE_Out", "ROPE_OutL", "ROPE_OutH", "BF0_Out", "BFless_Out", "BFgreat_Out", "BFcenter_Out")
+bayesRepMat <- matrix(nrow=length(uids), ncol=length(bNames))
+k<-0
+#for(n in 32:35){
+for(n in 1:length(uids)){
+  i<-uids[n]
+  subDf1 <- subset(longDf1, issues == i) #subset each P
+  inGroup<-unique(longDf1$bootEvalIn[longDf1$issues==i])
+  inGroup<-inGroup[!is.na(inGroup)]
+  outGroup<-unique(longDf1$bootEvalOut[longDf1$issues==i])
+  outGroup<-outGroup[!is.na(outGroup)]
+  outindiff <- all.neg(inGroup[1]-inGroup[2])
+  outindiff <- all.neg(unique(longDf1$bootOutIn[longDf1$issues==i])[1])
+  outindiffSD <- unique(longDf1$bootOutInSD[longDf1$issues==i])[1]
+  model <- stan_glm(toInG~RepN, data = subDf1,
+                    refresh=0,
+  #)
+  prior = normal(outindiff, outindiffSD*10, autoscale = FALSE))
+  posteriors <- describe_posterior(model)
+  BF_0 <-bayesfactor_parameters(model, null = 0)
+  BF_less <-bayesfactor_parameters(model , direction = "<")
+  BF_great <-bayesfactor_parameters(model, direction = ">")
+  BF_center <- bayesfactor_parameters(model, null = c(outindiff/2, -outindiff/2))
+  coefNon <-  posteriors$Median[2]
+  pdNon <-  posteriors$pd[2]
+  oneTailNon <- 1-pdNon
+  twoTailNon <- oneTailNon*2
+  coefOut <-  posteriors$Median[3]
+  pdOut <-  posteriors$pd[3]
+  oneTailOut <- 1-pdOut
+  twoTailOut <- oneTailOut*2
+  CI_l_non <- posteriors$CI_low[2]
+  CI_l_out <- posteriors$CI_low[3]
+  CI_h_non <- posteriors$CI_high[2]
+  CI_h_out <- posteriors$CI_high[3]
+  ROPE_low <- posteriors$ROPE_low[1]
+  ROPE_high <- posteriors$ROPE_high[1]
+  ROPE_Non <- posteriors$ROPE_Percentage[2]
+  ROPE_Out <- posteriors$ROPE_Percentage[3]
+  ROPE_L <- rope(model, range = c(0, Inf))
+  ROPE_H <- rope(model, range = c(-Inf, 0))
+  ROPE_NonH <- ROPE_H$ROPE_Percentage[2]
+  ROPE_OutH <- ROPE_H$ROPE_Percentage[3]
+  ROPE_NonL <- ROPE_L$ROPE_Percentage[2]
+  ROPE_OutL <- ROPE_L$ROPE_Percentage[3]
+  
+  bayesRepMat[n,] <- c(i, ROPE_low, ROPE_high, coefNon, pdNon, oneTailNon, twoTailNon, CI_l_non, CI_h_non, ROPE_Non, ROPE_NonL, ROPE_NonH, exp(BF_0$log_BF[2]), exp(BF_less$log_BF[2]), exp(BF_great$log_BF[2]), exp(BF_center$log_BF[2]), coefOut, pdOut, oneTailOut, twoTailOut, CI_l_out, CI_h_out, ROPE_Out, ROPE_OutL, ROPE_OutH, exp(BF_0$log_BF[3]), exp(BF_less$log_BF[3]), exp(BF_great$log_BF[3]), exp(BF_center$log_BF[3]))
+}
+
+colnames(bayesRepMat) <- bNames
+bayesRepMat <- as.data.frame(bayesRepMat)
+bayesRepMat$CI_out_sig <- 0
+bayesRepMat$CI_out_sig[sign(bayesRepMat$CI_l_out)==sign(bayesRepMat$CI_h_out)] <- 1
+bayesRepMat$CI_non_sig <- 0
+bayesRepMat$CI_non_sig[sign(bayesRepMat$CI_l_non)==sign(bayesRepMat$CI_h_non)] <- 1
+bayesRepMat$CI_out_range <- bayesRepMat$CI_h_out - bayesRepMat$CI_l_out
+bayesRepMat$CI_non_range <- bayesRepMat$CI_h_non - bayesRepMat$CI_l_non
+
+bayesRepMat2 <- merge(bayesRepMat, issueDf1[c("issues","Final.Phrasing","reput","honest","reputD")], by="issues")
+bayesRepMat2<-bayesRepMat2[order(-bayesRepMat2$BFless_Out),]
+bayesRepMatS1<-bayesRepMat2
+```
+
+### Percentages for Bayes analyses
+
+```{r}
+paste0("Two tail p's: ", mean(bayesRepMatS1$twoTailOut<.05))
+paste0("One tail p's: ", mean(bayesRepMatS1$oneTailOut<.05))
+paste0("BF greater: ", mean(bayesRepMatS1$BFgreat_Out>1))
+paste0("BF less: ", mean(bayesRepMatS1$BFless_Out>1))
+paste0("ROPE greater: ", mean(bayesRepMatS1$ROPE_OutH<.05))
+paste0("ROPE less: ", mean(bayesRepMatS1$ROPE_OutL<.05))
+paste0("BF less: ", mean(bayesRepMatS1$BFless_Out>1))
+paste0("BF center: ", mean(bayesRepMatS1$BFcenter_Out>1))
+paste0("BF nonzero: ", mean(bayesRepMatS1$BF0_Out>1))
+```
+
+### Differences in outgroup-conforming vs. ingroup-conforming issues
+
+```{r}
+bayesRepMatS1$foc <- bayesRepMatS1$BFgreat_Out > bayesRepMatS1$BFless_Out
+bayesRepMatS1$foc2 <- bayesRepMatS1$ROPE_OutL < .50
+bayesRepMatS1$foc3 <- "Neut"
+bayesRepMatS1$foc3[bayesRepMatS1$ROPE_OutL < .10] <- "toOut"
+bayesRepMatS1$foc3[bayesRepMatS1$ROPE_OutL > .90] <- "toIn"
+
+#longDf1 <- merge(longDf1, bayesRepMatS1[c("issues","foc")], by = "issues")
+#longDf1 <- merge(longDf1, bayesRepMatS1[c("issues","foc","foc2", "ROPE_OutL")], by = "issues")
+#longDf1 <- merge(longDf1, bayesRepMatS1[c("issues","foc3")], by = "issues")
+longDf1 <- merge(longDf1, bayesRepMatS1[c("issues","foc","foc2","foc3", "ROPE_OutL")], by = "issues")
+
+issDf1<-longDf1[!duplicated(longDf1$issues),]
+
+
+t.test(abs(bootInOut) ~ foc, issDf1)
+t.test(honest ~ foc, issDf1)
+t.test(reputD ~ foc, issDf1)
+t.test(change ~ foc, issDf1)
+t.test(overAg ~ foc, issDf1)
+
+t.test(abs(bootInOut) ~ foc2, issDf1)
+t.test(honest ~ foc2, issDf1)
+t.test(reputD ~ foc2, issDf1)
+t.test(change ~ foc2, issDf1)
+t.test(overAg ~ foc2, issDf1)
+
+issDf1$outTrue <- 1 - issDf1$ROPE_OutL
+cor.test(abs(issDf1$reputD), issDf1$outTrue)
+cor.test(abs(issDf1$change), issDf1$outTrue)
+cor.test(abs(issDf1$overAg), issDf1$outTrue)
+cor.test(abs(issDf1$honest), issDf1$outTrue)
+cor.test(abs(issDf1$bootInOut), issDf1$outTrue)
+
+m <- lmer(toInG ~ as.factor(foc3)*RepN*affPol + ( as.factor(foc3) | subID) + ( 1 | issues), data = longDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m)
+ggpredict(m, c("affPol","foc3", "RepN") ) %>% plot()
+
+m <- lmer(toInG ~ as.factor(foc3)*RepN*change + ( as.factor(foc3) | subID) + ( 1 | issues), data = longDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m)
+#ggpredict(m, c("affPol","foc3", "RepN") ) %>% plot()
+```
+
+## Conformity factor with individual differences
+
+```{r}
+m <- lmer(outDev ~ as.factor(foc)*affPol + ( as.factor(foc) | subID) + ( 1 | issues), data = longDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m)
+ggpredict(m, c("foc", "affPol") ) %>% plot()
+
+m <- lmer(outDev ~ as.factor(foc)*WSC + ( as.factor(foc) | subID) + ( 1 | issues), data = longDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m)
+ggpredict(m, c("foc", "WSC") ) %>% plot()
+
+m <- lmer(outDev ~ as.factor(foc)*MLAM + ( as.factor(foc) | subID) + ( 1 | issues), data = longDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m)
+ggpredict(m, c("foc", "MLAM") ) %>% plot()
+
+m <- lmer(outDev ~ as.factor(foc)*SGO.st + ( as.factor(foc) | subID) + ( 1 | issues), data = longDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m)
+ggpredict(m, c("foc", "SGO.st") ) %>% plot()
+```
+
+
+## Study 2
+
+```{r}
+all.neg <- function(x) -1*abs(x)
+set.seed(1)
+uids <- unique(longDf2$issues)
+Df2Issues <- longDf2[!duplicated(longDf2$label.x),]
+bNames <- c("issues", "ROPE_low", "ROPE_high", "coefNon", "pdNon", "oneTailNon", "twoTailNon", "CI_l_non", "CI_h_non", "ROPE_Non", "ROPE_NonL", "ROPE_NonH", "BF0_Non", "BFless_Non", "BFgreat_Non", "BFcenter_Non", "coefOut", "pdOut", "oneTailOut", "twoTailOut", "CI_l_out", "CI_h_out", "ROPE_Out", "ROPE_OutL", "ROPE_OutH", "BF0_Out", "BFless_Out", "BFgreat_Out", "BFcenter_Out")
+bayesRepMat <- matrix(nrow=length(uids), ncol=length(bNames))
+k<-0
+for(n in 1:length(uids)){
+  i<-uids[n]
+  subDf2 <- subset(longDf2, issues == i) #subset each P
+  inGroup<-unique(longDf2$bootEvalIn[longDf2$issues==i])
+  inGroup<-inGroup[!is.na(inGroup)]
+  outGroup<-unique(longDf2$bootEvalOut[longDf2$issues==i])
+  outGroup<-outGroup[!is.na(outGroup)]
+  #outindiff <- all.neg(inGroup[1]-inGroup[2])
+  outindiff <- all.neg(unique(longDf2$bootOutIn[longDf2$issues==i])[1])
+  outindiffSD <- unique(longDf2$bootOutInSD[longDf2$issues==i])[1]
+  model <- stan_glm(toInG~RepN, data = subDf2,
+                    refresh=0,
+  prior = normal(outindiff, outindiffSD*10, autoscale = FALSE))
+  posteriors <- describe_posterior(model)
+  BF_0 <-bayesfactor_parameters(model, null = 0)
+  BF_less <-bayesfactor_parameters(model, direction = "<")
+  BF_great <-bayesfactor_parameters(model, direction = ">")
+  BF_center <- bayesfactor_parameters(model, null = c(outindiff/2, -outindiff/2))
+  coefNon <-  posteriors$Median[2]
+  pdNon <-  posteriors$pd[2]
+  oneTailNon <- 1-pdNon
+  twoTailNon <- oneTailNon*2
+  coefOut <-  posteriors$Median[3]
+  pdOut <-  posteriors$pd[3]
+  oneTailOut <- 1-pdOut
+  twoTailOut <- oneTailOut*2
+  CI_l_non <- posteriors$CI_low[2]
+  CI_l_out <- posteriors$CI_low[3]
+  CI_h_non <- posteriors$CI_high[2]
+  CI_h_out <- posteriors$CI_high[3]
+  ROPE_low <- posteriors$ROPE_low[1]
+  ROPE_high <- posteriors$ROPE_high[1]
+  ROPE_Non <- posteriors$ROPE_Percentage[2]
+  ROPE_Out <- posteriors$ROPE_Percentage[3]
+  ROPE_L <- rope(model, range = c(0, Inf))
+  ROPE_H <- rope(model, range = c(-Inf, 0))
+  ROPE_NonH <- ROPE_H$ROPE_Percentage[2]
+  ROPE_OutH <- ROPE_H$ROPE_Percentage[3]
+  ROPE_NonL <- ROPE_L$ROPE_Percentage[2]
+  ROPE_OutL <- ROPE_L$ROPE_Percentage[3]
+  
+ bayesRepMat[n,] <- c(i, ROPE_low, ROPE_high, coefNon, pdNon, oneTailNon, twoTailNon, CI_l_non, CI_h_non, ROPE_Non, ROPE_NonL, ROPE_NonH, exp(BF_0$log_BF[2]), exp(BF_less$log_BF[2]), exp(BF_great$log_BF[2]), exp(BF_center$log_BF[2]), coefOut, pdOut, oneTailOut, twoTailOut, CI_l_out, CI_h_out, ROPE_Out, ROPE_OutL, ROPE_OutH, exp(BF_0$log_BF[3]), exp(BF_less$log_BF[3]), exp(BF_great$log_BF[3]), exp(BF_center$log_BF[3]))
+}
+
+colnames(bayesRepMat) <- bNames
+bayesRepMat <- as.data.frame(bayesRepMat)
+bayesRepMat$CI_out_sig <- 0
+bayesRepMat$CI_out_sig[sign(bayesRepMat$CI_l_out)==sign(bayesRepMat$CI_h_out)] <- 1
+bayesRepMat$CI_non_sig <- 0
+bayesRepMat$CI_non_sig[sign(bayesRepMat$CI_l_non)==sign(bayesRepMat$CI_h_non)] <- 1
+bayesRepMat$CI_out_range <- bayesRepMat$CI_h_out - bayesRepMat$CI_l_out
+bayesRepMat$CI_non_range <- bayesRepMat$CI_h_non - bayesRepMat$CI_l_non
+
+bayesRepMat2 <- merge(bayesRepMat, issueDf2[c("issues","label.x","reput","honest","reputD")], by="issues")
+bayesRepMat2<-bayesRepMat2[order(-bayesRepMat2$BFless_Out),]
+
+bayesRepMatS2<-bayesRepMat2
+```
+
+### Percentages for Bayes analyses
+
+```{r}
+paste0("Two tail p's: ", mean(bayesRepMatS2$twoTailOut<.05))
+paste0("One tail p's: ", mean(bayesRepMatS2$oneTailOut<.05))
+paste0("BF greater: ", mean(bayesRepMatS2$BFgreat_Out>1))
+paste0("BF less: ", mean(bayesRepMatS2$BFless_Out>1))
+paste0("BF center: ", mean(bayesRepMatS2$BFcenter_Out>1))
+paste0("BF nonzero: ", mean(bayesRepMatS2$BF0_Out>1))
+```
+
+### Differences in outgroup-conforming vs. ingroup-conforming issues
+
+```{r}
+bayesRepMatS2$foc <- bayesRepMatS2$BFgreat_Out > bayesRepMatS2$BFless_Out
+
+bayesRepMatS2$foc2 <- bayesRepMatS2$ROPE_OutL < .50
+bayesRepMatS2$foc3 <- "Neut"
+bayesRepMatS2$foc3[bayesRepMatS2$ROPE_OutL < .10] <- "toOut"
+bayesRepMatS2$foc3[bayesRepMatS2$ROPE_OutL > .90] <- "toIn"
+
+bayesRepMatS2$label.x[order(bayesRepMatS2$ROPE_OutL)]
+```
+
+```{r}
+
+#longDf2 <- merge(longDf2, bayesRepMatS2[c("issues","foc")], by = "issues")
+#longDf2 <- merge(longDf2, bayesRepMatS2[c("issues","foc","foc2", "ROPE_OutL")], by = "issues")
+#longDf2 <- merge(longDf2, bayesRepMatS2[c("issues","foc3")], by = "issues")
+longDf2 <- merge(longDf2, bayesRepMatS2[c("issues","foc","foc2","foc3", "ROPE_OutL")], by = "issues")
+
+issDf2<-longDf2[!duplicated(longDf2$issues),]
+t.test(abs(bootInOut) ~ foc, issDf2)
+t.test(honest ~ foc, issDf2)
+t.test(reputD ~ foc, issDf2)
+t.test(change ~ foc, issDf2)
+t.test(overAg ~ foc, issDf2)
+
+t.test(abs(bootInOut) ~ foc2, issDf2)
+t.test(honest ~ foc2, issDf2)
+t.test(reputD ~ foc2, issDf2)
+t.test(change ~ foc2, issDf2)
+t.test(overAg ~ foc2, issDf2)
+
+ezANOVA(issDf2, dv=change, wid=issues, between=foc3)
+
+m <- lmer(toInG ~ as.factor(foc3)*RepN*partyN + ( as.factor(foc3) | subID) + ( 1 | issues), data = longDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m)
+ggpredict(m, c("foc3","partyN") ) %>% plot()
+table(bayesRepMatS2$foc)
+```
+
+```{r}
+
+demDf1 <- subset(longDf1, partyN=="Dem")
+m1 <- lmer(eval ~ RepN*bootInOut*Info + ( bootInOut | subID) + ( 1 | issues), data = demDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m1)
+ggpredict(m1, c("bootInOut", "RepN","Info") ) %>% plot()
+
+repDf1 <- subset(longDf1, partyN=="Rep")
+m2 <- lmer(eval ~ RepN * bootInOut * Info + ( bootInOut | subID) + ( 1 | issues), data = repDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m2)
+ggpredict(m2, c("bootInOut", "RepN", "Info") ) %>% plot()
+
+m3 <- lmer(eval ~ RepN * bootInOut * Info + ( bootInOut | subID) + ( 1 | issues), data = longDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m3)
+ggpredict(m3, c("bootInOut", "RepN", "Info") ) %>% plot()
+```
+
+```{r}
+
+demDf2 <- subset(longDf2, partyN=="Dem")
+m1 <- lmer(eval ~ RepN*bootInOut*Info + ( bootInOut | subID) + ( 1 | issues), data = demDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m1)
+ggpredict(m1, c("bootInOut", "RepN","Info") ) %>% plot()
+
+repDf2 <- subset(longDf2, partyN=="Rep")
+m2 <- lmer(eval ~ RepN * bootInOut * Info + ( bootInOut | subID) + ( 1 | issues), data = repDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m2)
+ggpredict(m2, c("bootInOut", "RepN", "Info") ) %>% plot()
+
+m3 <- lmer(eval ~ RepN * bootInOut * Info + ( bootInOut | subID) + ( 1 | issues), data = longDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m3)
+ggpredict(m3, c("bootInOut", "RepN", "Info") ) %>% plot()
+```
+
+```{r}
+
+m3 <- lmer(eval ~ RepN * bootInOut * partyN + ( bootInOut | subID) + ( 1 | issues), data = longDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m3)
+ggpredict(m3, c("bootInOut", "RepN", "partyN") ) %>% plot()
+
+
+m3 <- lmer(eval ~ RepN * bootInOut * partyN + ( bootInOut | subID) + ( 1 | issues), data = longDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m3)
+ggpredict(m3, c("bootInOut", "RepN", "partyN") ) %>% plot()
+```
+
+```{r}
+demDf1 <- subset(longDf1, partyN=="Dem")
+m1 <- lmer(eval ~ RepN*bootInOut + ( bootInOut + honest | subID) + ( RepN | issues), data = demDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m1)
+ggpredict(m1, c("bootInOut", "RepN") ) %>% plot()
+
+repDf1 <- subset(longDf1, partyN=="Rep")
+m2 <- lmer(eval ~ RepN * bootInOut + ( bootInOut + honest | subID) + ( RepN | issues), data = repDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m2)
+ggpredict(m2, c("bootInOut", "RepN") ) %>% plot()
+
+m3 <- lmer(eval ~ RepN * bootInOut + ( bootInOut + honest | subID) + ( RepN | issues), data = longDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m3)
+ggpredict(m3, c("bootInOut", "RepN") ) %>% plot()
+```
+
+```{r}
+
+demDf2 <- subset(longDf2, partyN=="Dem")
+m1 <- lmer(eval ~ RepN*bootInOut + ( bootInOut | subID) + ( RepN | issues), data = demDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m1)
+ggpredict(m1, c("bootInOut", "RepN") ) %>% plot()
+
+repDf2 <- subset(longDf2, partyN=="Rep")
+m2 <- lmer(eval ~ RepN * bootInOut + ( bootInOut | subID) + ( RepN | issues), data = repDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m2)
+ggpredict(m2, c("bootInOut", "RepN") ) %>% plot()
+
+m3 <- lmer(eval ~ RepN * bootInOut + ( bootInOut | subID) + ( RepN | issues), data = longDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m3)
+ggpredict(m3, c("bootInOut", "RepN") ) %>% plot()
+```
+
+```{r}
+
+demDf1 <- subset(longDf1, partyN=="Dem")
+m1 <- lmer(eval ~ RepN*bootInOut*as.factor(foc2) + ( bootInOut + as.factor(foc2) | subID) + ( 1 | issues), data = demDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m1)
+ggpredict(m1, c("bootInOut", "RepN","foc2") ) %>% plot()
+
+repDf1 <- subset(longDf1, partyN=="Rep")
+m2 <- lmer(eval ~ RepN * bootInOut * as.factor(foc2) + ( bootInOut + as.factor(foc2) | subID) + ( 1 | issues), data = repDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m2)
+ggpredict(m2, c("bootInOut", "RepN") ) %>% plot()
+
+m3 <- lmer(eval ~ RepN * bootInOut * as.factor(foc2) + ( bootInOut + as.factor(foc2) | subID) + ( 1 | issues), data = longDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m3)
+ggpredict(m3, c("bootInOut", "foc2", "RepN") ) %>% plot()
+```
+
+```{r}
+
+demDf2 <- subset(longDf2, partyN=="Dem")
+m1 <- lmer(eval ~ RepN*bootInOut*as.factor(foc2) + ( bootInOut + as.factor(foc2) | subID) + ( 1 | issues), data = demDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m1)
+ggpredict(m1, c("bootInOut", "RepN","foc2") ) %>% plot()
+
+repDf2 <- subset(longDf2, partyN=="Rep")
+m2 <- lmer(eval ~ RepN * bootInOut * as.factor(foc2) + ( bootInOut + as.factor(foc2) | subID) + ( 1 | issues), data = repDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m2)
+ggpredict(m2, c("bootInOut", "RepN") ) %>% plot()
+
+m3 <- lmer(eval ~ RepN * bootInOut * as.factor(foc2) + ( bootInOut + as.factor(foc2) | subID) + ( 1 | issues), data = longDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m3)
+ggpredict(m3, c("bootInOut", "foc2", "RepN") ) %>% plot()
+```
+
+```{r}
+
+demDf2 <- subset(longDf2, partyN=="Dem")
+m1 <- lmer(eval ~ RepN*bootInOut*foc3 + ( bootInOut + foc3 | subID) + ( 1 | issues), data = demDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m1)
+ggpredict(m1, c("bootInOut", "RepN","foc3") ) %>% plot()
+
+repDf2 <- subset(longDf2, partyN=="Rep")
+m2 <- lmer(eval ~ RepN * bootInOut * foc3 + ( bootInOut + foc3 | subID) + ( 1 | issues), data = repDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m2)
+ggpredict(m2, c("bootInOut", "RepN") ) %>% plot()
+
+m3 <- lmer(eval ~ RepN * bootInOut * foc3 + ( bootInOut + foc3 | subID) + ( 1 | issues), data = longDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m3)
+ggpredict(m3, c("bootInOut", "foc3", "RepN") ) %>% plot()
+```
+
+
+```{r}
+demDf2 <- subset(longDf2, partyN=="Dem")
+m1 <- lmer(eval ~ RepN*bootEvalIn + ( bootEvalIn | subID) + ( 1 | issues), data = demDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m1)
+ggpredict(m1, c("bootEvalIn", "RepN") ) %>% plot()
+
+repDf2 <- subset(longDf2, partyN=="Rep")
+m2 <- lmer(eval ~ RepN * bootEvalIn + ( bootEvalIn | subID) + ( 1 | issues), data = repDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m2)
+ggpredict(m2, c("bootEvalIn", "RepN") ) %>% plot()
+
+m3 <- lmer(eval ~ RepN * bootEvalIn + ( bootEvalIn | subID) + ( 1 | issues), data = longDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m3)
+ggpredict(m3, c("bootEvalIn", "RepN") ) %>% plot()
+```
+
+```{r}
+
+demDf <- subset(longDf2, partyN=="Dem")
+m <- lmer(eval ~ as.factor(foc3)*RepN*bootEvalIn + ( as.factor(foc3) | subID) + ( 1 | issues), data = demDf, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m)
+ggpredict(m, c("bootEvalIn", "RepN") ) %>% plot()
+
+repDf <- subset(longDf2, partyN=="Rep")
+m <- lmer(eval ~ as.factor(foc3)*RepN * bootEvalIn + ( as.factor(foc3) + bootEvalIn | subID) + ( 1 | issues), data = repDf, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m)
+ggpredict(m, c("bootEvalIn","foc3", "RepN") ) %>% plot()
+```
+
+```{r}
+demDf1 <- subset(longDf2, partyN=="Dem")
+m1 <- lmer(eval ~ as.factor(foc2)*RepN + ( as.factor(foc3) | subID) + ( 1 | issues), data = demDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m1)
+ggpredict(m1, c("RepN","foc2") ) %>% plot()
+
+repDf1 <- subset(longDf2, partyN=="Rep")
+m2 <- lmer(eval ~ as.factor(foc2)*RepN + ( as.factor(foc3) + bootEvalIn | subID) + ( 1 | issues), data = repDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m2)
+ggpredict(m2, c("RepN","foc2") ) %>% plot()
+
+m3 <- lmer(toInG ~ as.factor(foc2)*RepN * partyN + ( as.factor(foc3) | subID) + ( 1 | issues), data = longDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m3)
+ggpredict(m3, c("partyN","RepN","foc2") ) %>% plot()
+```
+
+```{r}
+demDf2 <- subset(longDf2, partyN=="Dem")
+m1 <- lmer(eval ~ as.factor(foc2)*RepN + ( as.factor(foc3) | subID) + ( 1 | issues), data = demDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m1)
+ggpredict(m1, c("RepN","foc2") ) %>% plot()
+
+repDf2 <- subset(longDf2, partyN=="Rep")
+m2 <- lmer(eval ~ as.factor(foc2)*RepN + ( as.factor(foc3) + bootEvalIn | subID) + ( 1 | issues), data = repDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m2)
+ggpredict(m2, c("RepN","foc2") ) %>% plot()
+
+m3 <- lmer(toInG ~ as.factor(foc2)*RepN * partyN + ( as.factor(foc3) | subID) + ( 1 | issues), data = longDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m3)
+ggpredict(m3, c("partyN", "RepN","foc2") ) %>% plot()
+```
+
+```{r}
+demDf1 <- subset(longDf2, partyN=="Dem")
+m1 <- lmer(toInG ~ as.factor(foc2)*RepN + ( as.factor(foc3) | subID) + ( 1 | issues), data = demDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m1)
+ggpredict(m1, c("RepN","foc2") ) %>% plot()
+
+repDf1 <- subset(longDf2, partyN=="Rep")
+m2 <- lmer(toInG ~ as.factor(foc2)*RepN + ( as.factor(foc2) + bootEvalIn | subID) + ( 1 | issues), data = repDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m2)
+ggpredict(m2, c("RepN","foc2") ) %>% plot()
+
+m3 <- lmer(toInG ~ as.factor(foc2)*RepN * partyN + ( as.factor(foc2) | subID) + ( 1 | issues), data = longDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m3)
+ggpredict(m3, c("partyN","RepN","foc2") ) %>% plot()
+```
+
+```{r}
+demDf2 <- subset(longDf2, partyN=="Dem")
+m1 <- lmer(toInG ~ as.factor(foc2)*RepN + ( as.factor(foc2) | subID) + ( 1 | issues), data = demDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m1)
+ggpredict(m1, c("RepN","foc2") ) %>% plot()
+
+repDf2 <- subset(longDf2, partyN=="Rep")
+m2 <- lmer(toInG ~ as.factor(foc2)*RepN + ( as.factor(foc2) + bootEvalIn | subID) + ( 1 | issues), data = repDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m2)
+ggpredict(m2, c("RepN","foc2") ) %>% plot()
+
+m3 <- lmer(toInG ~ as.factor(foc2)*RepN * partyN + ( as.factor(foc2) | subID) + ( 1 | issues), data = longDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m3)
+ggpredict(m3, c("partyN", "RepN","foc2") ) %>% plot()
+```
+
+## Conformity factor with individual differences
+
+```{r}
+m <- lmer(outDev ~ as.factor(foc)*affPol + ( as.factor(foc) | subID) + ( 1 | issues), data = longDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+ggpredict(m, c("foc", "affPol") ) %>% plot()
+
+m <- lmer( scale(eval) ~ scale(inMinOut) * Info  + ( scale(inMinOut)  | subID) + (1 | issues), data = longDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m)
+ggpredict(m, c("inMinOut", "Info")) %>% plot()
+
+m <- lmer( scale(eval) ~ scale(inMinOut) * Info   + ( scale(inMinOut)  | subID) + (1 | issues), data = longDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m)
+ggpredict(m, c("inMinOut", "Info")) %>% plot()
+
+m <- lmer(outDev ~ as.factor(foc)*WSC + ( as.factor(foc) | subID) + ( 1 | issues), data = longDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m)
+ggpredict(m, c("foc", "WSC") ) %>% plot()
+
+m <- lmer(outDev ~ as.factor(foc)*MLAM + ( as.factor(foc) | subID) + ( 1 | issues), data = longDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m)
+ggpredict(m, c("foc", "MLAM") ) %>% plot()
+
+m <- lmer(outDev ~ as.factor(foc)*SGO.st + ( as.factor(foc) | subID) + ( 1 | issues), data = longDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m)
+ggpredict(m, c("foc", "SGO.st") ) %>% plot()
+```
+
+# Info
+
+More extreme views when receiving info
+
+```{r}
+m <- lmer( scale(eval) ~ scale(inMinOut) * Info  + ( scale(inMinOut) | subID) + (1 | issues), data = longDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m)
+ggpredict(m, c("inMinOut", "affPol")) %>% plot()
+
+m <- lmer( scale(eval) ~ scale(inMinOut) * Info  + ( scale(inMinOut) | subID) + (1 | issues), data = longDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m)
+ggpredict(m, c("inMinOut", "affPol")) %>% plot()
+```
+
+
+People higher in affective polarization evaluate exhibit extreme responses to information, exhibiting high approval for ingroup favored issues and high disapproval for outgroup favored issues.
+
+```{r}
+
+m <- lmer( scale(eval) ~ scale(inMinOut) * scale(affPol)  + ( scale(inMinOut) + scale(affPol) | subID) + (1 | issues), data = InfoDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m)
+ggpredict(m, c("inMinOut", "affPol")) %>% plot()
+
+m <- lmer( scale(eval) ~ scale(inMinOut) * scale(affPol)  + ( scale(inMinOut) + scale(affPol) | subID) + (1 | issues), data = InfoDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m)
+ggpredict(m, c("inMinOut", "affPol")) %>% plot()
+```
+
+
+
+
+
+
