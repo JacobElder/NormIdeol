@@ -1,0 +1,365 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+library(corrr)
+library(ggplot2)
+library(lme4)
+library(lmerTest)
+library(ggeffects)
+library(sjPlot)
+```
+
+```{r}
+#setwd("/Volumes/Research Project/Preference Falsification/Analysis/")
+indDiffDf <- read.csv("./output/PFindDiffDf.csv")
+indDiffDf[c("Rep","Info", "partyN")] <- NULL
+#longDf <- read.csv("./output/PFfullDf.csv")
+longDf <- read.csv("./output/PFfullDfzip.csv")
+indDiffDf <- merge(indDiffDf, longDf[match(unique(longDf$subID), longDf$subID),][c("subID","Polit")], by = "subID")
+indDiffDf$polStrength <- abs(7- indDiffDf$Polit )
+issExpDf <- read.csv("./output/issueAgDf.csv")
+longDf$partyN <- as.factor(longDf$partyN)
+longDf$Rep <- as.factor(longDf$Rep)
+contrasts(longDf$Rep) <- contr.sum(3)
+longDf$RepN <- as.factor(longDf$RepN)
+longDf$RepN <- relevel(longDf$RepN,"In")
+longDf$Info <- as.factor(longDf$Info)
+contrasts(longDf$Info) <- contr.sum(2)
+longDf$partyN <- as.factor(longDf$partyN)
+contrasts(longDf$partyN) <- contr.sum(2)
+longDf <- longDf[order(longDf$subID, longDf$issues),]
+demDf <- subset(longDf, partyN == "Dem")
+repDf <- subset(longDf, partyN == "Rep")
+shortDf1 <- longDf[!duplicated(longDf$subID),]
+```
+
+```{r, include=FALSE}
+setwd("~/Google Drive/Volumes/Research Project/Preference Falsification/Study 2 Analysis/")
+indDiffDf2 <- read.csv("./output/PFindDiffDf2.csv")
+longDf2 <- read.csv("./output/PFfullDf2.csv")
+issExpDf2 <- read.csv("./output/issueAgDf2.csv")
+longDf2$partyN <- as.factor(longDf2$partyN)
+longDf2$Rep <- as.factor(longDf2$Rep)
+longDf2$Rep <- factor(longDf2$Rep, c("Non","Rep","Dem"))
+longDf2$Rep <- relevel(longDf2$Rep,"Non")
+contrasts(longDf2$Rep) <- contr.sum(3)
+longDf2$RepN <- as.factor(longDf2$RepN)
+longDf2$RepN <- relevel(longDf2$RepN,"In")
+longDf2$Info <- as.factor(longDf2$Info)
+contrasts(longDf2$Info) <- contr.sum(2)
+longDf2$partyN <- as.factor(longDf2$partyN)
+contrasts(longDf2$partyN) <- contr.sum(2)
+demDf <- subset(longDf2, partyN == "Dem")
+repDf <- subset(longDf2, partyN == "Rep")
+longDf2 <- longDf2[order(longDf2$subID, longDf2$issues),]
+longDf2$polStrength <- abs(longDf2$Polit - 4)
+shortDf2 <- longDf2[!duplicated(longDf2$subID),]
+indDiffDf2 <- merge(indDiffDf2, shortDf2[c("subID","Polit")], by = "subID")
+```
+
+```{r}
+allDists <- tapply(longDf$eval, longDf$subID, dist)
+
+issuesFrame <- longDf[match(unique(longDf$issues), 1:100),]
+
+allDistsOut <- tapply(longDf$bootEvalOut, longDf$subID, dist)
+
+allDistsIn <- tapply(longDf$bootEvalIn, longDf$subID, dist)
+
+demIssues <- demDf[match(unique(demDf$issues), 1:100),]
+repIssues <- repDf[match(unique(repDf$issues), 1:100),]
+
+demDistM<-as.matrix(dist(c(demIssues$bootEvalIn, demIssues$bootEvalOut)))
+demDistM<-as.matrix(demDistM[-(1:100),-(101:200)])
+demDistV <- demDistM[lower.tri(demDistM)]
+
+repDistM<-as.matrix(dist(c(repIssues$bootEvalIn, repIssues$bootEvalOut)))
+repDistM<-as.matrix(repDistM[-(1:100),-(101:200)])
+repDistV <- repDistM[lower.tri(repDistM)]
+
+reputDist <- dist(issuesFrame$reput)
+reputMatrix <- as.matrix(reputDist)
+reputVector <- reputMatrix[lower.tri(reputMatrix)]
+
+reputDDist <- dist(issuesFrame$reputD)
+reputDMatrix <- as.matrix(reputDDist)
+reputDVector <- reputDMatrix[lower.tri(reputDMatrix)]
+
+honestDist <- dist(issuesFrame$honest)
+honestMatrix <- as.matrix(honestDist)
+honestVector <- honestMatrix[lower.tri(honestMatrix)]
+
+changeDist <- dist(issuesFrame$change)
+changeMatrix <- as.matrix(changeDist)
+changeVector <- changeMatrix[lower.tri(changeMatrix)]
+
+politicDist <- dist(issuesFrame$politic)
+politicMatrix <- as.matrix(politicDist)
+politicVector <- politicMatrix[lower.tri(politicMatrix)]
+
+breadthDist <- dist(issuesFrame$breadth)
+breadthMatrix <- as.matrix(breadthDist)
+breadthVector <- breadthMatrix[lower.tri(breadthMatrix)]
+
+longDfc<- longDf[c("subID","issues","eval")]
+longDfc <- longDfc[order(longDfc$subID, longDfc$issues),]
+wideDf <- longDfc %>% pivot_wider(names_from = issues, values_from = eval)
+
+corMat <- psych::fisherz( cor(wideDf[2:101], use="complete.obs") )
+corVector <- corMat[lower.tri(corMat)]
+
+#dist1 <- lower.tri(as.matrix(allDists[[1]]))
+#dist1 <- as.matrix(allDists[[1]])
+#dist2 <- dist1[lower.tri(dist1)]
+
+#fullMat <- matrix(ncol=2)
+fullMat <- as.data.frame(matrix(ncol=16))
+uIds<-unique(longDf$subID)
+for(i in 1:length(uIds)){
+  j <- uIds[i]
+  
+  distMatrix <- as.matrix(allDists[[i]])
+  distVector <- distMatrix[lower.tri(distMatrix)]
+  
+  distMatrixOut <- as.matrix(allDistsOut[[i]])
+  distVectorOut <- distMatrixOut[lower.tri(distMatrixOut)]
+  
+  distMatrixIn <- as.matrix(allDistsIn[[i]])
+  distVectorIn <- distMatrixOut[lower.tri(distMatrixIn)]
+  
+  if( as.character(unique(longDf$partyN[longDf$subID==j]))=="Rep" ){
+    partyDistV <- repDistV
+  }else if( as.character(unique(longDf$partyN[longDf$subID==j]))=="Dem" ){
+    partyDistV <- demDistV
+  }
+  
+  subMat <- cbind(data.frame(subID=j,dist=distVector,RepN=unique(longDf$RepN[longDf$subID==j]), partyN=unique(longDf$partyN[longDf$subID==j]), Info=unique(longDf$Info[longDf$subID==j]), Rep=unique(longDf$Rep[longDf$subID==j]), reputD = reputVector, reputDD = reputDVector, changeD = changeVector, honestD = honestVector, politicD = politicVector, breadthD = breadthVector, distOut = distVectorOut, distIn = distVectorIn, distParty  = partyDistV, corr = corVector ))
+  names(fullMat) <- colnames(subMat)
+  fullMat <- rbind(fullMat, subMat)
+}
+
+#x <- c("subID","dist")
+#fullDistDf <- as.data.frame(fullMat)
+#names(fullDistDf) <- x
+fullDistDf <- as.data.frame(fullMat)
+fullDistDf<-fullDistDf[!is.na(fullDistDf$subID),]
+
+#fullDistDf <- merge(fullDistDf, longDf[c("subID","RepN","partyN","Info")], by = "subID")
+
+fullDistDf <- merge(fullDistDf, indDiffDf, by = "subID")
+
+write.csv(fullDistDf, "~/Google Drive/Volumes/Research Project/Preference Falsification/Analysis/output/distanceDf.csv")
+```
+
+
+```{r}
+allDists <- tapply(longDf2$eval, longDf2$subID, dist)
+
+issuesFrame <- longDf2[match(unique(longDf2$issues), 1:100),]
+
+allDistsOut <- tapply(longDf2$bootEvalOut, longDf2$subID, dist)
+
+allDistsIn <- tapply(longDf2$bootEvalIn, longDf2$subID, dist)
+
+demIssues <- demDf[match(unique(demDf$issues), 1:100),]
+repIssues <- repDf[match(unique(repDf$issues), 1:100),]
+
+demDistM<-as.matrix(dist(c(demIssues$bootEvalIn, demIssues$bootEvalOut)))
+demDistM<-as.matrix(demDistM[-(1:100),-(101:200)])
+demDistV <- demDistM[lower.tri(demDistM)]
+
+repDistM<-as.matrix(dist(c(repIssues$bootEvalIn, repIssues$bootEvalOut)))
+repDistM<-as.matrix(repDistM[-(1:100),-(101:200)])
+repDistV <- repDistM[lower.tri(repDistM)]
+
+reputDist <- dist(issuesFrame$reput)
+reputMatrix <- as.matrix(reputDist)
+reputVector <- reputMatrix[lower.tri(reputMatrix)]
+
+reputDDist <- dist(issuesFrame$reputD)
+reputDMatrix <- as.matrix(reputDDist)
+reputDVector <- reputDMatrix[lower.tri(reputDMatrix)]
+
+honestDist <- dist(issuesFrame$honest)
+honestMatrix <- as.matrix(honestDist)
+honestVector <- honestMatrix[lower.tri(honestMatrix)]
+
+changeDist <- dist(issuesFrame$change)
+changeMatrix <- as.matrix(changeDist)
+changeVector <- changeMatrix[lower.tri(changeMatrix)]
+
+politicDist <- dist(issuesFrame$politic)
+politicMatrix <- as.matrix(politicDist)
+politicVector <- politicMatrix[lower.tri(politicMatrix)]
+
+breadthDist <- dist(issuesFrame$breadth)
+breadthMatrix <- as.matrix(breadthDist)
+breadthVector <- breadthMatrix[lower.tri(breadthMatrix)]
+
+longDf2c<- longDf2[c("subID","issues","eval")]
+longDf2c <- longDf2c[order(longDf2c$subID, longDf2c$issues),]
+wideDf <- longDf2c %>% pivot_wider(names_from = issues, values_from = eval)
+
+corMat <- psych::fisherz( cor(wideDf[2:101], use="complete.obs") )
+corVector <- corMat[lower.tri(corMat)]
+
+#dist1 <- lower.tri(as.matrix(allDists[[1]]))
+#dist1 <- as.matrix(allDists[[1]])
+#dist2 <- dist1[lower.tri(dist1)]
+
+#fullMat <- matrix(ncol=2)
+fullMat2 <- as.data.frame(matrix(ncol=16))
+uIds<-unique(longDf2$subID)
+for(i in 1:length(uIds)){
+  j <- uIds[i]
+  
+  distMatrix <- as.matrix(allDists[[i]])
+  distVector <- distMatrix[lower.tri(distMatrix)]
+  
+  distMatrixOut <- as.matrix(allDistsOut[[i]])
+  distVectorOut <- distMatrixOut[lower.tri(distMatrixOut)]
+  
+  distMatrixIn <- as.matrix(allDistsIn[[i]])
+  distVectorIn <- distMatrixOut[lower.tri(distMatrixIn)]
+  
+  if( as.character(unique(longDf2$partyN[longDf2$subID==j]))=="Rep" ){
+    partyDistV <- repDistV
+  }else if( as.character(unique(longDf2$partyN[longDf2$subID==j]))=="Dem" ){
+    partyDistV <- demDistV
+  }
+  
+  subMat <- cbind(data.frame(subID=j,dist=distVector,RepN=unique(longDf2$RepN[longDf2$subID==j]), partyN=unique(longDf2$partyN[longDf2$subID==j]), Info=unique(longDf2$Info[longDf2$subID==j]), Rep=unique(longDf2$Rep[longDf2$subID==j]), reputD = reputVector, reputDD = reputDVector, changeD = changeVector, honestD = honestVector, politicD = politicVector, breadthD = breadthVector, distOut = distVectorOut, distIn = distVectorIn, distParty  = partyDistV, corr = corVector ))
+  names(fullMat2) <- colnames(subMat)
+  fullMat2 <- rbind(fullMat2, subMat)
+}
+
+#x <- c("subID","dist")
+#fullDistDf <- as.data.frame(fullMat)
+#names(fullDistDf) <- x
+fullDistDf2 <- as.data.frame(fullMat2)
+fullDistDf2 <- fullDistDf2[!is.na(fullDistDf2$subID),]
+
+#fullDistDf <- merge(fullDistDf, longDf2[c("subID","RepN","partyN","Info")], by = "subID")
+
+
+fullDistDf2 <- merge(fullDistDf2, indDiffDf2, by = "subID")
+
+fullDistDf2$polStrength <- abs(4-fullDistDf2$Polit.y)
+write.csv(fullDistDf2, "~/Google Drive/Volumes/Research Project/Preference Falsification/Study 2 Analysis/output/distanceDf2.csv")
+```
+
+
+```{r}
+setwd("~/Google Drive/Volumes/")
+#setwd("/Volumes/Research Project/Preference Falsification/Analysis/")
+indDiffDf2 <- read.csv("./Research Project/Preference Falsification/Study 2 Analysis/output/PFindDiffDf2.csv")
+indDiffDf2[c("Rep","Info", "partyN")] <- NULL
+#longDf <- read.csv("./output/PFfullDf.csv")
+longDf2 <- read.csv("./Research Project/Preference Falsification/Study 2 Analysis/output/PFfullDf2.csv")
+indDiffDf2 <- merge(indDiffDf2, longDf2[match(unique(longDf2$subID), longDf2$subID),][c("subID","Polit")], by = "subID")
+indDiffDf2$polStrength <- abs(7- indDiffDf2$Polit )
+issExpDf2 <- read.csv("./Research Project/Preference Falsification/Study 2 Analysis/output/issueAgDf2.csv")
+longDf2$partyN <- as.factor(longDf2$partyN)
+longDf2$Rep <- as.factor(longDf2$Rep)
+contrasts(longDf2$Rep) <- contr.sum(3)
+longDf2$RepN <- as.factor(longDf2$RepN)
+longDf2$RepN <- relevel(longDf2$RepN,"In")
+longDf2$Info <- as.factor(longDf2$Info)
+contrasts(longDf2$Info) <- contr.sum(2)
+longDf2$partyN <- as.factor(longDf2$partyN)
+contrasts(longDf2$partyN) <- contr.sum(2)
+longDf2<- longDf2[order(longDf2$subID, longDf2$issues),]
+demDf2 <- subset(longDf2, partyN == "Dem")
+repDf2 <- subset(longDf2, partyN == "Rep")
+```
+
+```{r}
+allDists <- tapply(longDf2$eval, longDf2$subID, dist)
+
+issuesFrame <- longDf2[match(unique(longDf2$issues), 1:100),]
+
+allDistsOut <- tapply(longDf2$bootEvalOut, longDf2$subID, dist)
+
+allDistsIn <- tapply(longDf2$bootEvalIn, longDf2$subID, dist)
+
+demIssues <- demDf2[match(unique(demDf2$issues), 1:100),]
+repIssues <- repDf2[match(unique(repDf2$issues), 1:100),]
+
+demDistM<-as.matrix(dist(c(demIssues$bootEvalIn, demIssues$bootEvalOut)))
+demDistM<-as.matrix(demDistM[-(1:100),-(101:200)])
+demDistV <- demDistM[lower.tri(demDistM)]
+
+repDistM<-as.matrix(dist(c(repIssues$bootEvalIn, repIssues$bootEvalOut)))
+repDistM<-as.matrix(repDistM[-(1:100),-(101:200)])
+repDistV <- repDistM[lower.tri(repDistM)]
+
+reputDist <- dist(issuesFrame$reput)
+reputMatrix <- as.matrix(reputDist)
+reputVector <- reputMatrix[lower.tri(reputMatrix)]
+
+reputDDist <- dist(issuesFrame$reputD)
+reputDMatrix <- as.matrix(reputDDist)
+reputDVector <- reputDMatrix[lower.tri(reputDMatrix)]
+
+honestDist <- dist(issuesFrame$honest)
+honestMatrix <- as.matrix(honestDist)
+honestVector <- honestMatrix[lower.tri(honestMatrix)]
+
+changeDist <- dist(issuesFrame$change)
+changeMatrix <- as.matrix(changeDist)
+changeVector <- changeMatrix[lower.tri(changeMatrix)]
+
+politicDist <- dist(issuesFrame$politic)
+politicMatrix <- as.matrix(politicDist)
+politicVector <- politicMatrix[lower.tri(politicMatrix)]
+
+breadthDist <- dist(issuesFrame$breadth)
+breadthMatrix <- as.matrix(breadthDist)
+breadthVector <- breadthMatrix[lower.tri(breadthMatrix)]
+
+#dist1 <- lower.tri(as.matrix(allDists[[1]]))
+#dist1 <- as.matrix(allDists[[1]])
+#dist2 <- dist1[lower.tri(dist1)]
+
+#fullMat <- matrix(ncol=2)
+fullMat <- as.data.frame(matrix(ncol=15))
+uIds<-unique(longDf2$subID)
+for(i in 1:length(uIds)){
+  j <- uIds[i]
+  
+  distMatrix <- as.matrix(allDists[[i]])
+  distVector <- distMatrix[lower.tri(distMatrix)]
+  
+  distMatrixOut <- as.matrix(allDistsOut[[i]])
+  distVectorOut <- distMatrixOut[lower.tri(distMatrixOut)]
+  
+  distMatrixIn <- as.matrix(allDistsIn[[i]])
+  distVectorIn <- distMatrixIn[lower.tri(distMatrixIn)]
+  
+  if( as.character(unique(longDf2$partyN[longDf2$subID==j]))=="Rep" ){
+    partyDistV <- repDistV
+  }else if( as.character(unique(longDf2$partyN[longDf2$subID==j]))=="Dem" ){
+    partyDistV <- demDistV
+  }
+  
+  subMat <- cbind(data.frame(subID=j,dist=distVector,RepN=unique(longDf2$RepN[longDf2$subID==j]), partyN=unique(longDf2$partyN[longDf2$subID==j]), Info=unique(longDf2$Info[longDf2$subID==j]), Rep=unique(longDf2$Rep[longDf2$subID==j]), reputD = reputVector, reputDD = reputDVector, changeD = changeVector, honestD = honestVector, politicD = politicVector, breadthD = breadthVector, distOut = distVectorOut, distIn = distVectorIn, distParty = partyDistV ))
+  names(fullMat) <- colnames(subMat)
+  fullMat <- rbind(fullMat, subMat)
+}
+
+#x <- c("subID","dist")
+#fullDistDf <- as.data.frame(fullMat)
+#names(fullDistDf) <- x
+fullDistDf2 <- as.data.frame(fullMat)
+fullDistDf2<-fullDistDf2[!is.na(fullDistDf2$subID),]
+
+#fullDistDf <- merge(fullDistDf, longDf2[c("subID","RepN","partyN","Info")], by = "subID")
+
+fullDistDf2 <- merge(fullDistDf2, indDiffDf2, by = "subID")
+
+write.csv(fullDistDf2, "~/Google Drive/Volumes/Research Project/Preference Falsification/Study 2 Analysis/output/distanceDf2.csv")
+```
