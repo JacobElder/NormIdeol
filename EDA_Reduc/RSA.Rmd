@@ -4,17 +4,11 @@ output: html_notebook
 ---
 
 ```{r}
-library(tidyverse)
-library(corrr)
-library(ggplot2)
-library(lme4)
-library(lmerTest)
-library(ggeffects)
-library(sjPlot)
+pacman::p_load(tidyverse, corrr, ggplot2, lmerTest, ggeffects, sjPlot, tidyverse, heatmaply, pheatmap, gplots, RColorBrewer)
 ```
 
 ```{r}
-#setwd("/Volumes/Research Project/Preference Falsification/Analysis/")
+setwd("/Volumes/GoogleDrive/My Drive/Volumes/Research Project/Preference Falsification/Analysis/")
 indDiffDf <- read.csv("./output/PFindDiffDf.csv")
 indDiffDf[c("Rep","Info", "partyN")] <- NULL
 #longDf <- read.csv("./output/PFfullDf.csv")
@@ -62,6 +56,71 @@ indDiffDf2 <- merge(indDiffDf2, shortDf2[c("subID","Polit")], by = "subID")
 ```
 
 ```{r}
+longDfc<- longDf[c("subID","issues","eval")]
+longDfc <- longDfc[order(longDfc$subID, longDfc$issues),]
+wideDf <- longDfc %>% pivot_wider(names_from = issues, values_from = eval)
+
+corMat <- wideDf %>% select(`1`:`100`) %>% cor(.,use="pairwise.complete.obs")
+corMatZ <- psych::fisherz(corMat)
+corVector <- corMatZ[lower.tri(corMatZ)]
+```
+
+```{r}
+colnames(corMat) <- longDf$label[match(unique(longDf$issues), longDf$issues) ]
+rownames(corMat) <- longDf$label[match(unique(longDf$issues), longDf$issues) ]
+jpeg("~/Desktop/test.png", height=10, width=15, units="in",res=300)
+heatmap(corMat, Colv = "Rowv", symm=TRUE, cexRow=.5, cexCol=.5)
+dev.off()
+```
+
+```{r}
+jpeg("~/Desktop/test.png", height=12, width=30, units="in",res=300)
+outphm<-pheatmap(corMat, fontsize_row = 6, fontsize_col = 6, angle_col = 45, angle_row =45, width=100, height = 200 )
+outphm
+dev.off()
+outphm
+```
+
+```{r}
+out<-heatmaply::ggheatmap(corMat, grid_gap=2, colorbar_len=50, grid_size = 5 , Rowv=outphm[[1]], Colv=outphm[[2]], revC=TRUE, fontsize_row = 8.5, fontsize_col = 8.5, angle_col = 45, angle_row =45,  limits = c(-1, 1), colors = colorRampPalette(rev(brewer.pal(n = 7, name = "RdYlBu")))(100))
+jpeg("~/Desktop/test.png", height=15, width=20, units="in",res=300)
+out
+dev.off()
+```
+
+```{r}
+library(RColorBrewer)
+out<-heatmaply::ggheatmap(corMat, colorbar_len=50, grid_size = 5 , Rowv=outphm[[1]], Colv=outphm[[2]], revC=TRUE, fontsize_row = 8.5, fontsize_col = 8.5, angle_col = 45, angle_row =45,  limits = c(-1, 1), colors = colorRampPalette(rev(brewer.pal(n = 7, name = "RdYlBu")))(100))
+out
+ggsave("~/Desktop/test2.png", dpi=300,units="in",height=20,width=20)
+```
+
+
+
+
+```{r}
+heatmaply_cor(round(corMat,3), Rowv=outphm[[1]], Colv=outphm[[2]], revC=TRUE, fontsize_row = 2.5, fontsize_col = 2.5, angle_col = 45, angle_row =45,  limits = c(-1, 1), colors = colorRampPalette(rev(brewer.pal(n = 7, name =
+  "RdYlBu")))(100) )
+```
+
+
+```{r}
+mds2<-corMat %>%
+  psych::cor2dist(.) %>%
+  MASS::isoMDS(k=2) %>%
+  .$points %>%
+  as_tibble()
+colnames(mds2) <- c("Dim.1", "Dim.2")
+library(ggpubr)
+ggscatter(mds2, x = "Dim.1", y = "Dim.2", 
+          label = longDf$label[match(unique(longDf$issues), longDf$issues) ],
+          font.label = c(5, "bold", "black"),
+          size = 1,
+          repel = TRUE)
+```
+
+
+```{r}
 allDists <- tapply(longDf$eval, longDf$subID, dist)
 
 issuesFrame <- longDf[match(unique(longDf$issues), 1:100),]
@@ -105,18 +164,6 @@ breadthDist <- dist(issuesFrame$breadth)
 breadthMatrix <- as.matrix(breadthDist)
 breadthVector <- breadthMatrix[lower.tri(breadthMatrix)]
 
-longDfc<- longDf[c("subID","issues","eval")]
-longDfc <- longDfc[order(longDfc$subID, longDfc$issues),]
-wideDf <- longDfc %>% pivot_wider(names_from = issues, values_from = eval)
-
-corMat <- psych::fisherz( cor(wideDf[2:101], use="complete.obs") )
-corVector <- corMat[lower.tri(corMat)]
-
-#dist1 <- lower.tri(as.matrix(allDists[[1]]))
-#dist1 <- as.matrix(allDists[[1]])
-#dist2 <- dist1[lower.tri(dist1)]
-
-#fullMat <- matrix(ncol=2)
 fullMat <- as.data.frame(matrix(ncol=16))
 uIds<-unique(longDf$subID)
 for(i in 1:length(uIds)){
@@ -148,11 +195,77 @@ for(i in 1:length(uIds)){
 fullDistDf <- as.data.frame(fullMat)
 fullDistDf<-fullDistDf[!is.na(fullDistDf$subID),]
 
+fullDistDf$distSTrans <- 1/(1+fullDistDf$dist)
+fullDistDf$distETrans <- 1/(exp(fullDistDf$dist))
+
 #fullDistDf <- merge(fullDistDf, longDf[c("subID","RepN","partyN","Info")], by = "subID")
 
 fullDistDf <- merge(fullDistDf, indDiffDf, by = "subID")
 
 write.csv(fullDistDf, "~/Google Drive/Volumes/Research Project/Preference Falsification/Analysis/output/distanceDf.csv")
+```
+
+```{r}
+longDf2c<- longDf2[c("subID","issues","eval")]
+longDf2c <- longDf2c[order(longDf2c$subID, longDf2c$issues),]
+wideDf <- longDf2c %>% pivot_wider(names_from = issues, values_from = eval)
+
+corMat <- wideDf %>% select(`1`:`100`) %>% cor(.,use="pairwise.complete.obs")
+corMatZ <- psych::fisherz(corMat)
+corVector <- corMatZ[lower.tri(corMatZ)]
+```
+
+```{r}
+colnames(corMat) <- longDf2$label.x[match(unique(longDf2$issues), longDf2$issues) ]
+rownames(corMat) <- longDf2$label.x[match(unique(longDf2$issues), longDf2$issues) ]
+jpeg("~/Desktop/test.png", height=10, width=15, units="in",res=300)
+heatmap(corMat, Colv = "Rowv", symm=TRUE, cexRow=.5, cexCol=.5)
+dev.off()
+```
+
+```{r}
+jpeg("~/Desktop/test.png", height=12, width=30, units="in",res=300)
+outphm<-pheatmap(corMat, fontsize_row = 6, fontsize_col = 6, angle_col = 45, angle_row =45, width=100, height = 200 )
+outphm
+dev.off()
+outphm
+```
+
+```{r}
+out<-heatmaply::ggheatmap(corMat, grid_gap=2, colorbar_len=50, grid_size = 5 , Rowv=outphm[[1]], Colv=outphm[[2]], revC=TRUE, fontsize_row = 8.5, fontsize_col = 8.5, angle_col = 45, angle_row =45,  limits = c(-1, 1), colors = colorRampPalette(rev(brewer.pal(n = 7, name = "RdYlBu")))(100))
+jpeg("~/Desktop/test.png", height=15, width=20, units="in",res=300)
+out
+dev.off()
+```
+
+```{r}
+out<-heatmaply::ggheatmap(corMat, colorbar_len=50, grid_size = 5 , Rowv=outphm[[1]], Colv=outphm[[2]], revC=TRUE, fontsize_row = 8.5, fontsize_col = 8.5, angle_col = 45, angle_row =45,  limits = c(-1, 1), colors = colorRampPalette(rev(brewer.pal(n = 7, name = "RdYlBu")))(100))
+out
+ggsave("~/Desktop/test2.png", dpi=300,units="in",height=20,width=20)
+```
+
+
+
+
+```{r}
+heatmaply_cor(round(corMat,3), Rowv=outphm[[1]], Colv=outphm[[2]], revC=TRUE, fontsize_row = 2.5, fontsize_col = 2.5, angle_col = 45, angle_row =45,  limits = c(-1, 1), colors = colorRampPalette(rev(brewer.pal(n = 7, name =
+  "RdYlBu")))(100) )
+```
+
+
+```{r}
+mds2<-corMat %>%
+  psych::cor2dist(.) %>%
+  MASS::isoMDS(k=2) %>%
+  .$points %>%
+  as_tibble()
+colnames(mds2) <- c("Dim.1", "Dim.2")
+library(ggpubr)
+ggscatter(mds2, x = "Dim.1", y = "Dim.2", 
+          label = longDf2$label.x[match(unique(longDf2$issues), longDf2$issues) ],
+          font.label = c(5, "bold", "black"),
+          size = 1,
+          repel = TRUE)
 ```
 
 
@@ -200,13 +313,6 @@ breadthDist <- dist(issuesFrame$breadth)
 breadthMatrix <- as.matrix(breadthDist)
 breadthVector <- breadthMatrix[lower.tri(breadthMatrix)]
 
-longDf2c<- longDf2[c("subID","issues","eval")]
-longDf2c <- longDf2c[order(longDf2c$subID, longDf2c$issues),]
-wideDf <- longDf2c %>% pivot_wider(names_from = issues, values_from = eval)
-
-corMat <- psych::fisherz( cor(wideDf[2:101], use="complete.obs") )
-corVector <- corMat[lower.tri(corMat)]
-
 #dist1 <- lower.tri(as.matrix(allDists[[1]]))
 #dist1 <- as.matrix(allDists[[1]])
 #dist2 <- dist1[lower.tri(dist1)]
@@ -243,123 +349,11 @@ for(i in 1:length(uIds)){
 fullDistDf2 <- as.data.frame(fullMat2)
 fullDistDf2 <- fullDistDf2[!is.na(fullDistDf2$subID),]
 
-#fullDistDf <- merge(fullDistDf, longDf2[c("subID","RepN","partyN","Info")], by = "subID")
-
+fullDistDf2$distSTrans <- 1/(1+fullDistDf2$dist)
+fullDistDf2$distETrans <- 1/(exp(fullDistDf2$dist))
 
 fullDistDf2 <- merge(fullDistDf2, indDiffDf2, by = "subID")
 
 fullDistDf2$polStrength <- abs(4-fullDistDf2$Polit.y)
-write.csv(fullDistDf2, "~/Google Drive/Volumes/Research Project/Preference Falsification/Study 2 Analysis/output/distanceDf2.csv")
-```
-
-
-```{r}
-setwd("~/Google Drive/Volumes/")
-#setwd("/Volumes/Research Project/Preference Falsification/Analysis/")
-indDiffDf2 <- read.csv("./Research Project/Preference Falsification/Study 2 Analysis/output/PFindDiffDf2.csv")
-indDiffDf2[c("Rep","Info", "partyN")] <- NULL
-#longDf <- read.csv("./output/PFfullDf.csv")
-longDf2 <- read.csv("./Research Project/Preference Falsification/Study 2 Analysis/output/PFfullDf2.csv")
-indDiffDf2 <- merge(indDiffDf2, longDf2[match(unique(longDf2$subID), longDf2$subID),][c("subID","Polit")], by = "subID")
-indDiffDf2$polStrength <- abs(7- indDiffDf2$Polit )
-issExpDf2 <- read.csv("./Research Project/Preference Falsification/Study 2 Analysis/output/issueAgDf2.csv")
-longDf2$partyN <- as.factor(longDf2$partyN)
-longDf2$Rep <- as.factor(longDf2$Rep)
-contrasts(longDf2$Rep) <- contr.sum(3)
-longDf2$RepN <- as.factor(longDf2$RepN)
-longDf2$RepN <- relevel(longDf2$RepN,"In")
-longDf2$Info <- as.factor(longDf2$Info)
-contrasts(longDf2$Info) <- contr.sum(2)
-longDf2$partyN <- as.factor(longDf2$partyN)
-contrasts(longDf2$partyN) <- contr.sum(2)
-longDf2<- longDf2[order(longDf2$subID, longDf2$issues),]
-demDf2 <- subset(longDf2, partyN == "Dem")
-repDf2 <- subset(longDf2, partyN == "Rep")
-```
-
-```{r}
-allDists <- tapply(longDf2$eval, longDf2$subID, dist)
-
-issuesFrame <- longDf2[match(unique(longDf2$issues), 1:100),]
-
-allDistsOut <- tapply(longDf2$bootEvalOut, longDf2$subID, dist)
-
-allDistsIn <- tapply(longDf2$bootEvalIn, longDf2$subID, dist)
-
-demIssues <- demDf2[match(unique(demDf2$issues), 1:100),]
-repIssues <- repDf2[match(unique(repDf2$issues), 1:100),]
-
-demDistM<-as.matrix(dist(c(demIssues$bootEvalIn, demIssues$bootEvalOut)))
-demDistM<-as.matrix(demDistM[-(1:100),-(101:200)])
-demDistV <- demDistM[lower.tri(demDistM)]
-
-repDistM<-as.matrix(dist(c(repIssues$bootEvalIn, repIssues$bootEvalOut)))
-repDistM<-as.matrix(repDistM[-(1:100),-(101:200)])
-repDistV <- repDistM[lower.tri(repDistM)]
-
-reputDist <- dist(issuesFrame$reput)
-reputMatrix <- as.matrix(reputDist)
-reputVector <- reputMatrix[lower.tri(reputMatrix)]
-
-reputDDist <- dist(issuesFrame$reputD)
-reputDMatrix <- as.matrix(reputDDist)
-reputDVector <- reputDMatrix[lower.tri(reputDMatrix)]
-
-honestDist <- dist(issuesFrame$honest)
-honestMatrix <- as.matrix(honestDist)
-honestVector <- honestMatrix[lower.tri(honestMatrix)]
-
-changeDist <- dist(issuesFrame$change)
-changeMatrix <- as.matrix(changeDist)
-changeVector <- changeMatrix[lower.tri(changeMatrix)]
-
-politicDist <- dist(issuesFrame$politic)
-politicMatrix <- as.matrix(politicDist)
-politicVector <- politicMatrix[lower.tri(politicMatrix)]
-
-breadthDist <- dist(issuesFrame$breadth)
-breadthMatrix <- as.matrix(breadthDist)
-breadthVector <- breadthMatrix[lower.tri(breadthMatrix)]
-
-#dist1 <- lower.tri(as.matrix(allDists[[1]]))
-#dist1 <- as.matrix(allDists[[1]])
-#dist2 <- dist1[lower.tri(dist1)]
-
-#fullMat <- matrix(ncol=2)
-fullMat <- as.data.frame(matrix(ncol=15))
-uIds<-unique(longDf2$subID)
-for(i in 1:length(uIds)){
-  j <- uIds[i]
-  
-  distMatrix <- as.matrix(allDists[[i]])
-  distVector <- distMatrix[lower.tri(distMatrix)]
-  
-  distMatrixOut <- as.matrix(allDistsOut[[i]])
-  distVectorOut <- distMatrixOut[lower.tri(distMatrixOut)]
-  
-  distMatrixIn <- as.matrix(allDistsIn[[i]])
-  distVectorIn <- distMatrixIn[lower.tri(distMatrixIn)]
-  
-  if( as.character(unique(longDf2$partyN[longDf2$subID==j]))=="Rep" ){
-    partyDistV <- repDistV
-  }else if( as.character(unique(longDf2$partyN[longDf2$subID==j]))=="Dem" ){
-    partyDistV <- demDistV
-  }
-  
-  subMat <- cbind(data.frame(subID=j,dist=distVector,RepN=unique(longDf2$RepN[longDf2$subID==j]), partyN=unique(longDf2$partyN[longDf2$subID==j]), Info=unique(longDf2$Info[longDf2$subID==j]), Rep=unique(longDf2$Rep[longDf2$subID==j]), reputD = reputVector, reputDD = reputDVector, changeD = changeVector, honestD = honestVector, politicD = politicVector, breadthD = breadthVector, distOut = distVectorOut, distIn = distVectorIn, distParty = partyDistV ))
-  names(fullMat) <- colnames(subMat)
-  fullMat <- rbind(fullMat, subMat)
-}
-
-#x <- c("subID","dist")
-#fullDistDf <- as.data.frame(fullMat)
-#names(fullDistDf) <- x
-fullDistDf2 <- as.data.frame(fullMat)
-fullDistDf2<-fullDistDf2[!is.na(fullDistDf2$subID),]
-
-#fullDistDf <- merge(fullDistDf, longDf2[c("subID","RepN","partyN","Info")], by = "subID")
-
-fullDistDf2 <- merge(fullDistDf2, indDiffDf2, by = "subID")
-
 write.csv(fullDistDf2, "~/Google Drive/Volumes/Research Project/Preference Falsification/Study 2 Analysis/output/distanceDf2.csv")
 ```

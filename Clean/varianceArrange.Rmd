@@ -1,0 +1,163 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+```
+
+
+```{r}
+normDf <- read.csv("~/Google Drive/Volumes/Research Project/Preference Falsification/Normative Ratings/Data/allFinalNormDf.csv")
+setwd("~/Google Drive/Volumes/Research Project/Preference Falsification/Analysis/")
+indDiffDf1 <- read.csv("./output/PFindDiffDf.csv")
+longDf1 <- read.csv("./output/PFfullDf.csv")
+issExpDf1 <- read.csv("./output/issueAgDf.csv")
+longDf1$partyN <- as.factor(longDf1$partyN)
+longDf1$Rep <- as.factor(longDf1$Rep)
+contrasts(longDf1$Rep) <- contr.sum(3)
+longDf1$RepN <- as.factor(longDf1$RepN)
+longDf1$RepN <- relevel(longDf1$RepN,"In")
+longDf1$Info <- as.factor(longDf1$Info)
+contrasts(longDf1$Info) <- contr.sum(2)
+longDf1$partyN <- as.factor(longDf1$partyN)
+contrasts(longDf1$partyN) <- contr.sum(2)
+demDf <- subset(longDf1, partyN == "Dem")
+repDf <- subset(longDf1, partyN == "Rep")
+longDf1 <- longDf1[order(longDf1$subID, longDf1$issues),]
+longDf1$polStrength <- abs(longDf1$Polit - 4)
+```
+
+```{r, include=FALSE}
+setwd("~/Google Drive/Volumes/Research Project/Preference Falsification/Study 2 Analysis/")
+indDiffDf2 <- read.csv("./output/PFindDiffDf2.csv")
+longDf2 <- read.csv("./output/PFfullDf2.csv")
+issExpDf2 <- read.csv("./output/issueAgDf2.csv")
+longDf2$partyN <- as.factor(longDf2$partyN)
+longDf2$Rep <- as.factor(longDf2$Rep)
+longDf2$Rep <- factor(longDf2$Rep, c("Non","Rep","Dem"))
+longDf2$Rep <- relevel(longDf2$Rep,"Non")
+contrasts(longDf2$Rep) <- contr.sum(3)
+longDf2$RepN <- as.factor(longDf2$RepN)
+longDf2$RepN <- relevel(longDf2$RepN,"In")
+longDf2$Info <- as.factor(longDf2$Info)
+contrasts(longDf2$Info) <- contr.sum(2)
+longDf2$partyN <- as.factor(longDf2$partyN)
+contrasts(longDf2$partyN) <- contr.sum(2)
+demDf <- subset(longDf2, partyN == "Dem")
+repDf <- subset(longDf2, partyN == "Rep")
+longDf2 <- longDf2[order(longDf2$subID, longDf2$issues),]
+longDf2$polStrength <- abs(longDf2$Polit - 4)
+```
+
+```{r}
+varEval <- tapply(longDf1$eval, longDf1$subID, sd, na.rm =T)
+cvSEval <- tapply(longDf1$eval, longDf1$subID, sd, na.rm = T)/tapply(longDf1$eval, longDf1$subID, mean, na.rm = T)
+cvIEval <- tapply(longDf1$eval, longDf1$issues, sd, na.rm = T)/tapply(longDf1$eval, longDf1$issues, mean, na.rm = T)
+varOutDiff <- tapply(longDf1$abDiffOut, longDf1$subID, var, na.rm =T)
+varInDiff <- tapply(longDf1$abDiffIn, longDf1$subID, var, na.rm =T)
+isVarEval <- tapply(longDf1$eval, longDf1$issues, var, na.rm =T)
+issueVarDf <- data.frame(issues = unique(longDf1$issues), isVarEval = isVarEval, cvIEval = cvIEval)
+subjVarDf <- data.frame(subID = unique(longDf1$subID), varEval = varEval, varOutDiff = varOutDiff, varInDiff = varInDiff, cvSEval = cvSEval)
+
+longDf1 <- merge(longDf1, subjVarDf, by = "subID")
+longDf1 <- merge(longDf1, issueVarDf, by = "issues")
+
+longDf1$varDev <- longDf1$varEval - longDf1$isVarEval
+longDf1$inOutVarDev <- longDf1$varOutDiff - longDf1$varInDiff
+```
+
+```{r}
+longDf1$inVar <- NA
+longDf1$outVar <- NA
+uPa <- unique(longDf1$partyN)
+uIss <- unique(longDf1$issues)
+for(p in uPa){
+  for(i in uIss){
+  partyDf <- subset(longDf1, partyN == p) # subset party
+  issueDf <- subset(partyDf, issues == i) # subset issue
+  issueDf <- issueDf[!is.na(issueDf$eval),] # remove NAs
+  evalArray <- issueDf$eval # all of evals for this given issue and party
+  curVar <- var(evalArray, na.rm = TRUE) # take the mean from the distribution of sample means
+  longDf1$inVar[longDf1$partyN==p & longDf1$issues==i] <- curVar
+  longDf1$outVar[longDf1$partyN!=p & longDf1$issues==i] <- curVar
+  }
+}
+longDf1$moreVarThanIn <- longDf1$varEval - longDf1$inVar
+longDf1$moreVarThanOut <- longDf1$varEval - longDf1$outVar
+```
+
+```{r}
+varEval <- tapply(longDf2$eval, longDf2$subID, var, na.rm =T)
+varOutDiff <- tapply(longDf2$abDiffOut, longDf2$subID, var, na.rm =T)
+varInDiff <- tapply(longDf2$abDiffIn, longDf2$subID, var, na.rm =T)
+isVarEval <- tapply(longDf2$eval, longDf2$issues, var, na.rm =T)
+issueVarDf <- data.frame(issues = unique(longDf2$issues), isVarEval = isVarEval)
+subjVarDf <- data.frame(subID = unique(longDf2$subID), varEval = varEval, varOutDiff = varOutDiff, varInDiff = varInDiff)
+
+longDf2 <- merge(longDf2, subjVarDf, by = "subID")
+longDf2 <- merge(longDf2, issueVarDf, by = "issues")
+
+longDf2$varDev <- longDf2$varEval - longDf2$isVarEval
+longDf2$inOutVarDev <- longDf2$varOutDiff - longDf2$varInDiff
+```
+
+```{r}
+longDf2$inVar <- NA
+longDf2$outVar <- NA
+uPa <- unique(longDf2$partyN)
+uIss <- unique(longDf2$issues)
+for(p in uPa){
+  for(i in uIss){
+  partyDf <- subset(longDf2, partyN == p) # subset party
+  issueDf <- subset(partyDf, issues == i) # subset issue
+  issueDf <- issueDf[!is.na(issueDf$eval),] # remove NAs
+  evalArray <- issueDf$eval # all of evals for this given issue and party
+  curVar <- var(evalArray, na.rm = TRUE) # take the mean from the distribution of sample means
+  longDf2$inVar[longDf2$partyN==p & longDf2$issues==i] <- curVar
+  longDf2$outVar[longDf2$partyN!=p & longDf2$issues==i] <- curVar
+  }
+}
+longDf2$moreVarThanIn <- longDf2$varEval - longDf2$inVar
+longDf2$moreVarThanOut <- longDf2$varEval - longDf2$outVar
+```
+
+```{r}
+varianceTwoInputs <- function(deviation, center){
+  sum((deviation - center)^2,na.rm=T)/length(deviation[!is.na(deviation)])
+}
+
+test<-longDf1 %>%
+  group_by(subID) %>%
+  summarise(varAroundOut = sum((eval - bootEvalOut)^2,na.rm=T)/length(bootEvalOut[!is.na(bootEvalOut)]),
+            varAroundIn = sum((eval - bootEvalIn)^2,na.rm=T)/length(bootEvalIn[!is.na(bootEvalIn)]))
+
+longDf1 <- merge(longDf1, test, by="subID")
+
+test<-longDf2 %>%
+  group_by(subID) %>%
+  summarise(varAroundOut = sum((eval - bootEvalOut)^2,na.rm=T)/length(bootEvalOut[!is.na(bootEvalOut)]),
+            varAroundIn = sum((eval - bootEvalIn)^2,na.rm=T)/length(bootEvalIn[!is.na(bootEvalIn)]))
+
+longDf2 <- merge(longDf2, test, by="subID")
+```
+
+```{r}
+subDf1 <- longDf1[!duplicated(longDf1$subID),]
+subDf2 <- longDf2[!duplicated(longDf2$subID),]
+```
+
+```{r}
+subDf1 <- subDf1 %>% select(subID:Therm_2, label, Final.Phrasing, partyN, RepN, Trump, inApp:affPol, polStrength:varAroundIn)
+
+subDf2 <- subDf2 %>% select(subID:Therm_2, label.x, partyN, RepN, Trump, inApp:affPol, polStrength:varAroundIn)
+```
+
+```{r}
+write.csv(subDf1, "~/Google Drive/Volumes/Research Project/Preference Falsification/Analysis/output/varDf1.csv")
+write.csv(subDf2, "~/Google Drive/Volumes/Research Project/Preference Falsification/Study 2 Analysis/output/varDf2.csv")
+```
+
+
+
