@@ -1,0 +1,53 @@
+F_to_eta2               Convert test statistics (F, t) to indices of
+                        *partial* variance explained (*partial* Eta /
+                        Omega / Epsilon squared and Cohen's f)
+chisq_to_phi            Conversion Chi-Squared to Phi or Cramer's V
+cles                    Estimate Common Language Effect Sizes (CLES)
+cohens_d                Effect size for differences
+d_to_cles               Convert Standardized Mean Difference to Common
+                        Language Effect Sizes
+d_to_r                  Convert between _d_, _r_ and _Odds ratio_
+effectsize.BFBayesFactor
+                        Effect Size
+effectsize_API          'effectsize' API
+effectsize_CIs          Confidence (Compatibility) Intervals
+effectsize_deprecated   Deprecated functions
+equivalence_test.effectsize_table
+                        Test for Practical Equivalence
+eta2_to_f2              Convert between ANOVA effect sizes
+eta_squared             Effect size for ANOVA
+format_standardize      Transform a standardized vector into character
+hardlyworking           Workers' salary and other information
+interpret               Generic function for interpretation
+interpret_bf            Interpret Bayes Factor (BF)
+interpret_cohens_d      Interpret standardized differences
+interpret_cohens_g      Interpret Cohen's g
+interpret_direction     Interpret direction
+interpret_ess           Interpret Bayesian diagnostic indices
+interpret_gfi           Interpret of indices of CFA / SEM goodness of
+                        fit
+interpret_icc           Interpret Intraclass Correlation Coefficient
+                        (ICC)
+interpret_kendalls_w    Interpret Kendall's coefficient of concordance
+interpret_oddsratio     Interpret Odds ratio
+interpret_omega_squared
+                        Interpret ANOVA effect size
+interpret_p             Interpret p-values
+interpret_pd            Interpret Probability of Direction (pd)
+interpret_r             Interpret correlation coefficient
+interpret_r2            Interpret coefficient of determination (R2)
+interpret_rope          Interpret Bayesian diagnostic indices
+interpret_vif           Interpret the Variance Inflation Factor (VIF)
+is_effectsize_name      Checks if character is of a supported effect
+                        size
+odds_to_probs           Convert between Odds and Probabilities
+oddsratio_to_riskratio
+                        Convert between Odds ratios and Risk ratios
+phi                     Effect size for contingency tables
+plot.effectsize_table   Methods for 'effectsize' tables
+rank_biserial           Effect size for non-parametric (rank sum) tests
+rules                   Interpretation Grid
+sd_pooled               Pooled Standard Deviation
+t_to_d                  Convert test statistics (t, z, F) to effect
+                        sizes of differences (Cohen's d) or association
+                        (*partial* r)
