@@ -8,15 +8,16 @@ output:
 ```{r}
 #pacman::p_load(tidyverse, corrr, ggplot2, lme4, lmerTest, ggeffects, sjPlot, insight, data.table)
 library(groundhog)
-pkgs <-  c("corrr","tidyverse","ggplot2","lme4","lmerTest", "ggeffects", "sjPlot", "insight", "data.table")
+pkgs <-  c("corrr","tidyverse","ggplot2","lme4","lmerTest", "ggeffects", "sjPlot", "insight", "data.table", "here", "arrow")
 groundhog.day <- '2022-07-25'
 groundhog.library(pkgs, groundhog.day)
+here::i_am("main/Analysis/reportingResults.Rmd")
 ```
 
 ```{r}
-longDf1 <- arrow::read_parquet("./output/PFfullDf.parquet")
-distDf1 <- arrow::read_parquet("./output/distanceDf.parquet")
-varDf1 <- arrow::read_parquet("./output/varDf1.parquet")
+longDf1 <- read_parquet(here::here("output","PFfullDf.parquet"))
+distDf1 <- arrow::read_parquet(here::here("output","distanceDf.parquet"))
+varDf1 <- arrow::read_parquet(here::here("output","varDf1.parquet"))
 longDf1$partyN <- as.factor(longDf1$partyN)
 longDf1$Rep <- as.factor(longDf1$Rep)
 contrasts(longDf1$Rep) <- contr.sum(3)
@@ -35,9 +36,9 @@ distDf1$polStrength <- as.factor(abs(4-distDf1$Polit))
 ```
 
 ```{r}
-longDf2 <- arrow::read_parquet("./output/PFfullDf2.csv")
-distDf2 <- arrow::read_parquet("./output/distanceDf2.csv")
-varDf2 <- arrow::read_parquet("./output/varDf2.csv")
+longDf2 <- arrow::read_parquet(here::here("output","PFfullDf2.csv"))
+distDf2 <- arrow::read_parquet(here::here("output","distanceDf2.csv"))
+varDf2 <- arrow::read_parquet(here::here("output","varDf2.csv"))
 longDf2$partyN <- as.factor(longDf2$partyN)
 longDf2$Rep <- as.factor(longDf2$Rep)
 longDf2$Rep <- factor(longDf2$Rep, c("Non","Rep","Dem"))
