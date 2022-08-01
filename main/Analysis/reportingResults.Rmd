@@ -1,0 +1,467 @@
+---
+title: "R Notebook"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r}
+#pacman::p_load(tidyverse, corrr, ggplot2, lme4, lmerTest, ggeffects, sjPlot, insight, data.table)
+library(groundhog)
+pkgs <-  c("corrr","tidyverse","ggplot2","lme4","lmerTest", "ggeffects", "sjPlot", "insight", "data.table")
+groundhog.day <- '2022-07-25'
+groundhog.library(pkgs, groundhog.day)
+```
+
+```{r}
+id_long1 <- "1oGb9pcJp4b8Y5uwSgxrlgCaX9WYCMvOV" # google file ID
+id_distDf1 <- "1QoCa1_FDU5CkAgU7bgpzPNWw7Vwz8uUj" # google file ID
+id_varDf1 <- "1hSb4rsPgvUakASFuhjaMYLUI3P8d163X" # google file ID
+
+longDf1 <- fread(sprintf("https://docs.google.com/uc?id=%s&export=download", id_long1))
+distDf1 <- fread(sprintf("https://docs.google.com/uc?id=%s&export=download", id_distDf1))
+varDf1 <- fread(sprintf("https://docs.google.com/uc?id=%s&export=download", id_varDf1))
+
+# setwd("~/Google Drive/Volumes/Research Project/Preference Falsification/Analysis/")
+# longDf1 <- fread("./output/PFfullDf.csv")
+# distDf1 <- fread("./output/distanceDf.csv")
+# varDf1 <- fread("./output/varDf1.csv")
+longDf1$partyN <- as.factor(longDf1$partyN)
+longDf1$Rep <- as.factor(longDf1$Rep)
+contrasts(longDf1$Rep) <- contr.sum(3)
+longDf1$RepN <- as.factor(longDf1$RepN)
+longDf1$RepN <- relevel(longDf1$RepN,"In")
+longDf1$Info <- as.factor(longDf1$Info)
+contrasts(longDf1$Info) <- contr.sum(2)
+longDf1$partyN <- as.factor(longDf1$partyN)
+contrasts(longDf1$partyN) <- contr.sum(2)
+demDf <- subset(longDf1, partyN == "Dem")
+repDf <- subset(longDf1, partyN == "Rep")
+longDf1$politStre <- as.factor(abs(4-longDf1$Polit))
+InfoDf1 <- subset(longDf1, Info == "Info")
+issueDf1 <- longDf1[!duplicated(longDf1$issues),]
+distDf1$polStrength <- as.factor(abs(4-distDf1$Polit))
+```
+```{r}
+id_long2 <- "1dnn4i4qB78PSi8pds-u8r4TXYG5E0hoh" # google file ID
+id_distDf2 <- "19xlZuQqjFoI2J9I4PTceHHOrjW43Mj7z" # google file ID
+id_varDf2 <- "1hMdFfq97mg4BLTgxDOQX4ytuVGFS5D-c" # google file ID
+
+longDf2 <- fread(sprintf("https://docs.google.com/uc?id=%s&export=download", id_long2))
+distDf2 <- fread(sprintf("https://docs.google.com/uc?id=%s&export=download", id_distDf2))
+varDf2 <- fread(sprintf("https://docs.google.com/uc?id=%s&export=download", id_varDf2))
+
+distDf2 <- read_csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id_distDf2))
+
+# setwd("~/Google Drive/Volumes/Research Project/Preference Falsification/Study 2 Analysis/")
+# longDf2 <- fread("./output/PFfullDf2.csv")
+# distDf2 <- fread("./output/distanceDf2.csv")
+#varDf2 <- fread("./output/varDf2.csv")
+longDf2$partyN <- as.factor(longDf2$partyN)
+longDf2$Rep <- as.factor(longDf2$Rep)
+longDf2$Rep <- factor(longDf2$Rep, c("Non","Rep","Dem"))
+longDf2$Rep <- relevel(longDf2$Rep,"Non")
+contrasts(longDf2$Rep) <- contr.sum(3)
+longDf2$RepN <- as.factor(longDf2$RepN)
+longDf2$RepN <- relevel(longDf2$RepN,"In")
+longDf2$Info <- as.factor(longDf2$Info)
+contrasts(longDf2$Info) <- contr.sum(2)
+longDf2$partyN <- as.factor(longDf2$partyN)
+contrasts(longDf2$partyN) <- contr.sum(2)
+demDf <- subset(longDf2, partyN == "Dem")
+repDf <- subset(longDf2, partyN == "Rep")
+longDf2$politStre <- as.factor(abs(4-longDf2$Polit))
+InfoDf2 <- subset(longDf2, Info == "Info")
+issueDf2 <- longDf2[!duplicated(longDf2$issues),]
+```
+
+# Similarity of Issues Predicting Similarity of Evaluations
+
+## Reputation Manipulation
+
+### Study 1
+
+```{r}
+m <- lmer( scale(dist) ~ scale(corr) * RepN + ( scale(corr) | subID), data = distDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m)
+
+ggpredict(m, c("corr","RepN")) %>% plot()
+```
+
+### Study 2
+
+```{r}
+m <- lmer( scale(dist) ~ scale(corr) * RepN + ( scale(corr) | subID), data = distDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m)
+
+ggpredict(m, c("corr","RepN")) %>% plot()
+```
+
+## Info Manipulation
+
+### Study 1
+
+```{r}
+m <- lmer( scale(dist) ~ scale(corr) * Info + ( scale(corr) | subID), data = distDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m)
+
+ggpredict(m, c("corr","Info")) %>% plot()
+```
+
+### Study 2
+
+```{r}
+m <- lmer( scale(dist) ~ scale(corr) * Info.x + ( scale(corr) | subID), data = distDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m)
+
+ggpredict(m, c("corr","Info.x")) %>% plot()
+```
+
+## For Affective Polarization
+
+### Study 1
+
+```{r}
+m <- lmer( scale(dist) ~ scale(corr) * scale(affPol) + ( scale(corr) | subID), data = distDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m)
+
+ggpredict(m, c("corr","affPol")) %>% plot()
+```
+
+### Study 2
+
+```{r}
+m <- lmer( scale(dist) ~ scale(corr) * scale(affPol) + ( scale(corr) | subID), data = distDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m)
+
+ggpredict(m, c("corr","affPol")) %>% plot()
+```
+
+## Similarity and Individual Differences
+
+```{r}
+m1 <- lmer( scale(dist) ~ scale(corr) * Trump + ( scale(corr) | subID), data = distDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m1)
+
+
+
+
+m2 <- lmer( scale(dist) ~ scale(corr) * Trump + ( scale(corr) | subID), data = distDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m2)
+
+ggpredict(m1, c("corr", "Trump")) %>% plot()
+ggpredict(m2, c("corr", "Trump")) %>% plot()
+```
+
+```{r}
+m1 <- lmer( scale(dist) ~ scale(corr) * scale(WSC) + ( scale(corr) | subID), data = distDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m1)
+
+
+
+
+m2 <- lmer( scale(dist) ~ scale(corr) * scale(WSC) + ( scale(corr) | subID), data = distDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m2)
+
+ggpredict(m1, c("corr", "WSC")) %>% plot()
+ggpredict(m2, c("corr", "WSC")) %>% plot()
+```
+
+```{r}
+m1 <- lmer( scale(dist) ~ scale(corr) * scale(MLAM) + ( scale(corr) | subID), data = distDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m1)
+
+
+
+
+m2 <- lmer( scale(dist) ~ scale(corr) * scale(MLAM) + ( scale(corr) | subID), data = distDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m2)
+```
+
+```{r}
+ggpredict(m1, c("corr", "MLAM")) %>% plot()
+ggpredict(m2, c("corr", "MLAM")) %>% plot()
+```
+
+```{r}
+m1 <- lmer( scale(dist) ~ scale(corr) * scale(NFC) + ( scale(corr) | subID), data = distDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m1)
+
+
+
+
+m2 <- lmer( scale(dist) ~ scale(corr) * scale(NFC) + ( scale(corr) | subID), data = distDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m2)
+```
+
+```{r}
+ggpredict(m1, c("corr", "NFC")) %>% plot()
+ggpredict(m2, c("corr", "NFC")) %>% plot()
+```
+
+```{r}
+m1 <- lmer( scale(dist) ~ scale(corr) * scale(SGO.wt) + ( scale(corr) | subID), data = distDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m1)
+
+
+
+
+m2 <- lmer( scale(dist) ~ scale(corr) * scale(SGO.wt) + ( scale(corr) | subID), data = distDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m2)
+
+ggpredict(m1, c("corr", "SGO.wt")) %>% plot()
+ggpredict(m2, c("corr", "SGO.wt")) %>% plot()
+```
+
+```{r}
+m1 <- lmer( scale(dist) ~ scale(corr) * scale(SGO.st) + ( scale(corr) | subID), data = distDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m1)
+
+
+
+
+m2 <- lmer( scale(dist) ~ scale(corr) * scale(SGO.st) + ( scale(corr) | subID), data = distDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m2)
+
+ggpredict(m1, c("corr", "SGO.st")) %>% plot()
+ggpredict(m2, c("corr", "SGO.st")) %>% plot()
+```
+
+# Ideological Consistency as Variance Around Ingroup or Outgroup
+
+## For Affective Polarization
+
+People higher in affective polarization deviate less from ingroup and more from outgroup.
+
+### Study 1
+
+```{r}
+m <- lm(scale(varAroundIn) ~ scale(affPol), varDf1)
+summary(m)
+
+m <- lm(scale(varAroundOut) ~ scale(affPol), varDf1)
+summary(m)
+```
+
+### Study 2
+
+```{r}
+m <- lm(scale(varAroundIn) ~ scale(affPol), varDf2)
+summary(m)
+
+m <- lm(scale(varAroundOut) ~ scale(affPol), varDf2)
+summary(m)
+```
+
+## For Info
+
+In Study 1, people in info condition deviate more from outgroup and in Study 2, people in info condition deviate less from ingroup. Not statistical replications, but conceptually are consistent.
+
+### Study 1
+
+```{r}
+m <- lm(scale(varAroundIn) ~ Info, varDf1)
+summary(m)
+ggpredict(m, c("Info") ) %>% plot()
+
+m <- lm(scale(varAroundOut) ~ Info, varDf1)
+summary(m)
+ggpredict(m, c("Info") ) %>% plot()
+```
+
+### Study 2
+
+```{r}
+m <- lm(scale(varAroundIn) ~ Info, varDf2)
+summary(m)
+ggpredict(m, c("Info") ) %>% plot()
+
+m <- lm(scale(varAroundOut) ~ Info, varDf2)
+summary(m)
+```
+
+# Reputation Effect
+
+Reputation effect does not pan out. this probably needs to be cleaned up.
+
+```{r}
+demDf1 <- subset(longDf1, partyN=="Dem")
+m1 <- lmer(eval ~ RepN*bootInOut*Info + bootInOutSD + ( bootInOut | subID) + ( 1 | issues), data = demDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m1)
+ggpredict(m1, c("bootInOut", "RepN","Info") ) %>% plot()
+
+repDf1 <- subset(longDf1, partyN=="Rep")
+m2 <- lmer(eval ~ RepN * bootInOut * Info + ( bootInOut | subID) + ( 1 | issues), data = repDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m2)
+ggpredict(m2, c("bootInOut", "RepN", "Info") ) %>% plot()
+
+m3 <- lmer(eval ~ RepN * bootInOut * Info + ( bootInOut | subID) + ( 1 | issues), data = longDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m3)
+ggpredict(m3, c("bootInOut", "RepN", "Info") ) %>% plot()
+```
+
+```{r}
+
+demDf2 <- subset(longDf2, partyN=="Dem")
+m1 <- lmer(eval ~ RepN*bootInOut*Info + ( bootInOut | subID) + ( 1 | issues), data = demDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m1)
+ggpredict(m1, c("bootInOut", "RepN","Info") ) %>% plot()
+
+repDf2 <- subset(longDf2, partyN=="Rep")
+m2 <- lmer(eval ~ RepN * bootInOut * Info + ( bootInOut | subID) + ( 1 | issues), data = repDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m2)
+ggpredict(m2, c("bootInOut", "RepN", "Info") ) %>% plot()
+
+m3 <- lmer(eval ~ RepN * bootInOut * Info + ( bootInOut | subID) + ( 1 | issues), data = longDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m3)
+ggpredict(m3, c("bootInOut", "RepN", "Info") ) %>% plot()
+```
+
+```{r}
+
+m3 <- lmer(eval ~ RepN * bootInOut * partyN + ( bootInOut | subID) + ( 1 | issues), data = longDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m3)
+ggpredict(m3, c("bootInOut", "RepN", "partyN") ) %>% plot()
+
+
+m3 <- lmer(eval ~ RepN * bootInOut * partyN + ( bootInOut | subID) + ( 1 | issues), data = longDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m3)
+ggpredict(m3, c("bootInOut", "RepN", "partyN") ) %>% plot()
+```
+
+```{r}
+demDf1 <- subset(longDf1, partyN=="Dem")
+m1 <- lmer(eval ~ RepN*bootInOut + ( bootInOut + honest | subID) + ( RepN | issues), data = demDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m1)
+ggpredict(m1, c("bootInOut", "RepN") ) %>% plot()
+
+repDf1 <- subset(longDf1, partyN=="Rep")
+m2 <- lmer(eval ~ RepN * bootInOut + ( bootInOut + honest | subID) + ( RepN | issues), data = repDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m2)
+ggpredict(m2, c("bootInOut", "RepN") ) %>% plot()
+
+m3 <- lmer(eval ~ RepN * bootInOut + ( bootInOut + honest | subID) + ( RepN | issues), data = longDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m3)
+ggpredict(m3, c("bootInOut", "RepN") ) %>% plot()
+```
+
+```{r}
+
+demDf2 <- subset(longDf2, partyN=="Dem")
+m1 <- lmer(eval ~ RepN*bootInOut + ( bootInOut | subID) + ( RepN | issues), data = demDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m1)
+ggpredict(m1, c("bootInOut", "RepN") ) %>% plot()
+
+repDf2 <- subset(longDf2, partyN=="Rep")
+m2 <- lmer(eval ~ RepN * bootInOut + ( bootInOut | subID) + ( RepN | issues), data = repDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m2)
+ggpredict(m2, c("bootInOut", "RepN") ) %>% plot()
+
+m3 <- lmer(eval ~ RepN * bootInOut + ( bootInOut | subID) + ( RepN | issues), data = longDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m3)
+ggpredict(m3, c("bootInOut", "RepN") ) %>% plot()
+```
+
+
+```{r}
+demDf2 <- subset(longDf2, partyN=="Dem")
+m1 <- lmer(eval ~ RepN*bootEvalIn + ( bootEvalIn | subID) + ( 1 | issues), data = demDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m1)
+ggpredict(m1, c("bootEvalIn", "RepN") ) %>% plot()
+
+repDf2 <- subset(longDf2, partyN=="Rep")
+m2 <- lmer(eval ~ RepN * bootEvalIn + ( bootEvalIn | subID) + ( 1 | issues), data = repDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m2)
+ggpredict(m2, c("bootEvalIn", "RepN") ) %>% plot()
+
+m3 <- lmer(eval ~ RepN * bootEvalIn + ( bootEvalIn | subID) + ( 1 | issues), data = longDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m3)
+ggpredict(m3, c("bootEvalIn", "RepN") ) %>% plot()
+```
+
+# Info
+
+More extreme views when receiving info
+
+```{r}
+m <- lmer( scale(eval) ~ scale(inMinOut) * Info  + ( scale(inMinOut) | subID) + (1 | issues), data = longDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m)
+ggpredict(m, c("inMinOut", "affPol")) %>% plot()
+
+m <- lmer( scale(eval) ~ scale(inMinOut) * Info  + ( scale(inMinOut) | subID) + (1 | issues), data = longDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m)
+ggpredict(m, c("inMinOut", "affPol")) %>% plot()
+```
+
+Three-way interaction suggests that affective polarization is not amplifying the effect of info, but rather the availability of information condition and affective polarization show distinct and separate interactions with information.
+
+```{r}
+m <- lmer( scale(eval) ~ scale(inMinOut) * Info * scale(affPol)  + ( scale(inMinOut) | subID) + (1 | issues), data = longDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m)
+ggpredict(m, c("inMinOut", "affPol", "Info")) %>% plot()
+
+m <- lmer( scale(eval) ~ scale(inMinOut) * Info * scale(affPol) + ( scale(inMinOut) | subID) + (1 | issues), data = longDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m)
+ggpredict(m, c("inMinOut", "affPol", "Info")) %>% plot()
+ggpredict(m, c("inMinOut", "Info")) %>% plot()
+ggpredict(m, c("inMinOut", "affPol")) %>% plot()
+```
+People higher in affective polarization evaluate exhibit extreme responses to information, exhibiting high approval for ingroup favored issues and high disapproval for outgroup favored issues.
+
+```{r}
+
+m <- lmer( scale(eval) ~ scale(inMinOut) * scale(affPol)  + ( scale(inMinOut) + scale(affPol) | subID) + (1 | issues), data = InfoDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m)
+ggpredict(m, c("inMinOut", "affPol")) %>% plot()
+
+m <- lmer( scale(eval) ~ scale(inMinOut) * scale(affPol)  + ( scale(inMinOut) + scale(affPol) | subID) + (1 | issues), data = InfoDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m)
+ggpredict(m, c("inMinOut", "affPol")) %>% plot()
+```
+
+
+
+
+
+
