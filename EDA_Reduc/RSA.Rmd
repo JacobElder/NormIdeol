@@ -202,7 +202,13 @@ fullDistDf$distETrans <- 1/(exp(fullDistDf$dist))
 
 fullDistDf <- merge(fullDistDf, indDiffDf, by = "subID")
 
+colnames(fullDistDf)
+
+fullDistDf <- fullDistDf %>% select(subID, dist, RepN, partyN, Info, Rep, corr, distSTrans, distETrans, affPol:falsify, Polit, polStrength)
+
 write.csv(fullDistDf, "~/Google Drive/Volumes/Research Project/Preference Falsification/Analysis/output/distanceDf.csv")
+
+arrow::write_parquet(fullDistDf, "~/Google Drive/Volumes/Research Project/Preference Falsification/Analysis/output/distanceDf.parquet")
 ```
 
 ```{r}
@@ -352,8 +358,14 @@ fullDistDf2 <- fullDistDf2[!is.na(fullDistDf2$subID),]
 fullDistDf2$distSTrans <- 1/(1+fullDistDf2$dist)
 fullDistDf2$distETrans <- 1/(exp(fullDistDf2$dist))
 
+indDiffDf2 <- indDiffDf2 %>% select(subID, Polit.x:falsify)
 fullDistDf2 <- merge(fullDistDf2, indDiffDf2, by = "subID")
 
-fullDistDf2$polStrength <- abs(4-fullDistDf2$Polit.y)
-write.csv(fullDistDf2, "~/Google Drive/Volumes/Research Project/Preference Falsification/Study 2 Analysis/output/distanceDf2.csv")
+fullDistDf2$polStrength <- abs(4-fullDistDf2$Polit.x)
+
+fullDistDf2 <- fullDistDf2 %>% select(subID, dist, RepN, partyN, Info, Rep, corr, distSTrans, distETrans, affPol:falsify, Polit.x, polStrength)
+
+write.csv(fullDistDf2, "/Volumes/GoogleDrive/My Drive/Volumes/Research Project/Preference Falsification/Study 2 Analysis/output/distanceDf2.csv")
+
+arrow::write_parquet(fullDistDf2, "/Volumes/GoogleDrive/My Drive/Volumes/Research Project/Preference Falsification/Study 2 Analysis/output/distanceDf2.parquet")
 ```
