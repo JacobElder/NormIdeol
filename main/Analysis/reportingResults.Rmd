@@ -14,18 +14,9 @@ groundhog.library(pkgs, groundhog.day)
 ```
 
 ```{r}
-id_long1 <- "1oGb9pcJp4b8Y5uwSgxrlgCaX9WYCMvOV" # google file ID
-id_distDf1 <- "1QoCa1_FDU5CkAgU7bgpzPNWw7Vwz8uUj" # google file ID
-id_varDf1 <- "1hSb4rsPgvUakASFuhjaMYLUI3P8d163X" # google file ID
-
-longDf1 <- fread(sprintf("https://docs.google.com/uc?id=%s&export=download", id_long1))
-distDf1 <- fread(sprintf("https://docs.google.com/uc?id=%s&export=download", id_distDf1))
-varDf1 <- fread(sprintf("https://docs.google.com/uc?id=%s&export=download", id_varDf1))
-
-# setwd("~/Google Drive/Volumes/Research Project/Preference Falsification/Analysis/")
-# longDf1 <- fread("./output/PFfullDf.csv")
-# distDf1 <- fread("./output/distanceDf.csv")
-# varDf1 <- fread("./output/varDf1.csv")
+longDf1 <- arrow::read_parquet("./output/PFfullDf.parquet")
+distDf1 <- arrow::read_parquet("./output/distanceDf.parquet")
+varDf1 <- arrow::read_parquet("./output/varDf1.parquet")
 longDf1$partyN <- as.factor(longDf1$partyN)
 longDf1$Rep <- as.factor(longDf1$Rep)
 contrasts(longDf1$Rep) <- contr.sum(3)
@@ -42,21 +33,11 @@ InfoDf1 <- subset(longDf1, Info == "Info")
 issueDf1 <- longDf1[!duplicated(longDf1$issues),]
 distDf1$polStrength <- as.factor(abs(4-distDf1$Polit))
 ```
+
 ```{r}
-id_long2 <- "1dnn4i4qB78PSi8pds-u8r4TXYG5E0hoh" # google file ID
-id_distDf2 <- "19xlZuQqjFoI2J9I4PTceHHOrjW43Mj7z" # google file ID
-id_varDf2 <- "1hMdFfq97mg4BLTgxDOQX4ytuVGFS5D-c" # google file ID
-
-longDf2 <- fread(sprintf("https://docs.google.com/uc?id=%s&export=download", id_long2))
-distDf2 <- fread(sprintf("https://docs.google.com/uc?id=%s&export=download", id_distDf2))
-varDf2 <- fread(sprintf("https://docs.google.com/uc?id=%s&export=download", id_varDf2))
-
-distDf2 <- read_csv(sprintf("https://docs.google.com/uc?id=%s&export=download", id_distDf2))
-
-# setwd("~/Google Drive/Volumes/Research Project/Preference Falsification/Study 2 Analysis/")
-# longDf2 <- fread("./output/PFfullDf2.csv")
-# distDf2 <- fread("./output/distanceDf2.csv")
-#varDf2 <- fread("./output/varDf2.csv")
+longDf2 <- arrow::read_parquet("./output/PFfullDf2.csv")
+distDf2 <- arrow::read_parquet("./output/distanceDf2.csv")
+varDf2 <- arrow::read_parquet("./output/varDf2.csv")
 longDf2$partyN <- as.factor(longDf2$partyN)
 longDf2$Rep <- as.factor(longDf2$Rep)
 longDf2$Rep <- factor(longDf2$Rep, c("Non","Rep","Dem"))

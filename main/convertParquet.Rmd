@@ -1,0 +1,39 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+dir.create("~/Documents/GitHub/Preference-Falsification/main/Analysis/output/")
+```
+
+
+# Convert Study 1 to Parquet
+
+```{r}
+setwd("~/Google Drive/Volumes/Research Project/Preference Falsification/Analysis/")
+longDf1 <- data.table::fread("./output/PFfullDf.csv")
+distDf1 <- data.table::fread("./output/distanceDf.csv")
+varDf1 <- data.table::fread("./output/varDf1.csv")
+```
+
+```{r}
+arrow::write_parquet(longDf1, "~/Documents/GitHub/Preference-Falsification/main/Analysis/output/PFfullDf.parquet")
+arrow::write_parquet(distDf1, "~/Documents/GitHub/Preference-Falsification/main/Analysis/output/distanceDf.parquet")
+arrow::write_parquet(varDf1, "~/Documents/GitHub/Preference-Falsification/main/Analysis/output/varDf1.parquet")
+```
+
+# Convert Study 2 to Parquet
+
+```{r}
+setwd("~/Google Drive/Volumes/Research Project/Preference Falsification/Study 2 Analysis/")
+longDf2 <- data.table::fread("./output/PFfullDf2.csv")
+distDf2 <- data.table::fread("./output/distanceDf2.csv")
+varDf2 <- data.table::fread("./output/varDf2.csv")
+```
+
+```{r}
+arrow::write_parquet(longDf2, "~/Documents/GitHub/Preference-Falsification/main/Analysis/output/PFfullDf2.parquet")
+arrow::write_parquet(distDf2, "~/Documents/GitHub/Preference-Falsification/main/Analysis/output/distanceDf2.parquet")
+arrow::write_parquet(varDf2, "~/Documents/GitHub/Preference-Falsification/main/Analysis/output/varDf2.parquet")
+```
