@@ -37,3 +37,12 @@ arrow::write_parquet(longDf2, "~/Documents/GitHub/Preference-Falsification/main/
 arrow::write_parquet(distDf2, "~/Documents/GitHub/Preference-Falsification/main/Analysis/output/distanceDf2.parquet")
 arrow::write_parquet(varDf2, "~/Documents/GitHub/Preference-Falsification/main/Analysis/output/varDf2.parquet")
 ```
+
+```{r}
+library(microbenchmark)
+setwd("~/Google Drive/Volumes/Research Project/Preference Falsification/Study 2 Analysis/")
+microbenchmark(read.csv = read.csv("./output/PFfullDf2.csv"),
+               fread = data.table::fread("./output/PFfullDf2.csv"),
+               read_parquet = arrow::read_parquet("~/Documents/GitHub/Preference-Falsification/main/Analysis/output/PFfullDf2.parquet"))
+```
+
