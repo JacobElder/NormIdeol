@@ -1,12 +1,15 @@
 ---
-title: "R Notebook"
+title: "Analysis"
+format: html
+editor: visual
 output:
   html_document:
     df_print: paged
 ---
 
+## 
+
 ```{r}
-#pacman::p_load(tidyverse, corrr, ggplot2, lme4, lmerTest, ggeffects, sjPlot, insight, data.table)
 library(groundhog)
 pkgs <-  c("corrr","tidyverse","ggplot2","lme4","lmerTest", "ggeffects", "sjPlot", "insight", "data.table", "here", "arrow")
 groundhog.day <- '2022-07-25'
@@ -15,6 +18,7 @@ here::i_am("main/Analysis/reportingResults.Rmd")
 ```
 
 ```{r}
+#study 1
 longDf1 <- read_parquet(here("main","analysis","output","PFfullDf.parquet"))
 distDf1 <- read_parquet(here("main","analysis","output","distanceDf.parquet"))
 varDf1 <- read_parquet(here("main","analysis","output","varDf1.parquet"))
@@ -33,12 +37,11 @@ longDf1$politStre <- as.factor(abs(4-longDf1$Polit))
 InfoDf1 <- subset(longDf1, Info == "Info")
 issueDf1 <- longDf1[!duplicated(longDf1$issues),]
 distDf1$polStrength <- as.factor(abs(4-distDf1$Polit))
-```
 
-```{r}
-longDf2 <- read_parquet(here("main","analysis","output","PFfullDf2.csv"))
-distDf2 <- read_parquet(here("main","analysis","output","distanceDf2.csv"))
-varDf2 <- read_parquet(here("main","analysis","output","varDf2.csv"))
+#study 2
+longDf2 <- read_parquet(here("main","analysis","output","PFfullDf2.parquet"))
+distDf2 <- read_parquet(here("main","analysis","output","distanceDf2.parquet"))
+varDf2 <- read_parquet(here("main","analysis","output","varDf2.parquet"))
 longDf2$partyN <- as.factor(longDf2$partyN)
 longDf2$Rep <- as.factor(longDf2$Rep)
 longDf2$Rep <- factor(longDf2$Rep, c("Non","Rep","Dem"))
@@ -57,11 +60,11 @@ InfoDf2 <- subset(longDf2, Info == "Info")
 issueDf2 <- longDf2[!duplicated(longDf2$issues),]
 ```
 
-# Similarity of Issues Predicting Similarity of Evaluations
+\# Similarity of Issues Predicting Similarity of Evaluations
 
-## Reputation Manipulation
+\## Reputation Manipulation
 
-### Study 1
+\### Study 1
 
 ```{r}
 m <- lmer( scale(dist) ~ scale(corr) * RepN + ( scale(corr) | subID), data = distDf1, control=lmerControl(optimizer="bobyqa",
@@ -71,7 +74,7 @@ summary(m)
 ggpredict(m, c("corr","RepN")) %>% plot()
 ```
 
-### Study 2
+\### Study 2
 
 ```{r}
 m <- lmer( scale(dist) ~ scale(corr) * RepN + ( scale(corr) | subID), data = distDf2, control=lmerControl(optimizer="bobyqa",
@@ -81,9 +84,9 @@ summary(m)
 ggpredict(m, c("corr","RepN")) %>% plot()
 ```
 
-## Info Manipulation
+\## Info Manipulation
 
-### Study 1
+\### Study 1
 
 ```{r}
 m <- lmer( scale(dist) ~ scale(corr) * Info + ( scale(corr) | subID), data = distDf1, control=lmerControl(optimizer="bobyqa",
@@ -93,19 +96,19 @@ summary(m)
 ggpredict(m, c("corr","Info")) %>% plot()
 ```
 
-### Study 2
+\### Study 2
 
 ```{r}
-m <- lmer( scale(dist) ~ scale(corr) * Info.x + ( scale(corr) | subID), data = distDf2, control=lmerControl(optimizer="bobyqa",
+m <- lmer( scale(dist) ~ scale(corr) * Info + ( scale(corr) | subID), data = distDf2, control=lmerControl(optimizer="bobyqa",
                                 optCtrl=list(maxfun=2e5)))
 summary(m)
 
 ggpredict(m, c("corr","Info.x")) %>% plot()
 ```
 
-## For Affective Polarization
+\## For Affective Polarization
 
-### Study 1
+\### Study 1
 
 ```{r}
 m <- lmer( scale(dist) ~ scale(corr) * scale(affPol) + ( scale(corr) | subID), data = distDf1, control=lmerControl(optimizer="bobyqa",
@@ -113,9 +116,10 @@ m <- lmer( scale(dist) ~ scale(corr) * scale(affPol) + ( scale(corr) | subID), d
 summary(m)
 
 ggpredict(m, c("corr","affPol")) %>% plot()
+
 ```
 
-### Study 2
+\### Study 2
 
 ```{r}
 m <- lmer( scale(dist) ~ scale(corr) * scale(affPol) + ( scale(corr) | subID), data = distDf2, control=lmerControl(optimizer="bobyqa",
@@ -125,7 +129,7 @@ summary(m)
 ggpredict(m, c("corr","affPol")) %>% plot()
 ```
 
-## Similarity and Individual Differences
+\## Similarity and Individual Differences
 
 ```{r}
 m1 <- lmer( scale(dist) ~ scale(corr) * Trump + ( scale(corr) | subID), data = distDf1, control=lmerControl(optimizer="bobyqa",
@@ -157,6 +161,7 @@ summary(m2)
 
 ggpredict(m1, c("corr", "WSC")) %>% plot()
 ggpredict(m2, c("corr", "WSC")) %>% plot()
+
 ```
 
 ```{r}
@@ -170,9 +175,6 @@ summary(m1)
 m2 <- lmer( scale(dist) ~ scale(corr) * scale(MLAM) + ( scale(corr) | subID), data = distDf2, control=lmerControl(optimizer="bobyqa",
                                 optCtrl=list(maxfun=2e5)))
 summary(m2)
-```
-
-```{r}
 ggpredict(m1, c("corr", "MLAM")) %>% plot()
 ggpredict(m2, c("corr", "MLAM")) %>% plot()
 ```
@@ -188,9 +190,6 @@ summary(m1)
 m2 <- lmer( scale(dist) ~ scale(corr) * scale(NFC) + ( scale(corr) | subID), data = distDf2, control=lmerControl(optimizer="bobyqa",
                                 optCtrl=list(maxfun=2e5)))
 summary(m2)
-```
-
-```{r}
 ggpredict(m1, c("corr", "NFC")) %>% plot()
 ggpredict(m2, c("corr", "NFC")) %>% plot()
 ```
@@ -227,13 +226,13 @@ ggpredict(m1, c("corr", "SGO.st")) %>% plot()
 ggpredict(m2, c("corr", "SGO.st")) %>% plot()
 ```
 
-# Ideological Consistency as Variance Around Ingroup or Outgroup
+\# Ideological Consistency as Variance Around Ingroup or Outgroup
 
-## For Affective Polarization
+\## For Affective Polarization
 
-People higher in affective polarization deviate less from ingroup and more from outgroup.
+**People higher in affective polarization deviate less from ingroup and more from outgroup.**
 
-### Study 1
+\### Study 1
 
 ```{r}
 m <- lm(scale(varAroundIn) ~ scale(affPol), varDf1)
@@ -243,8 +242,6 @@ m <- lm(scale(varAroundOut) ~ scale(affPol), varDf1)
 summary(m)
 ```
 
-### Study 2
-
 ```{r}
 m <- lm(scale(varAroundIn) ~ scale(affPol), varDf2)
 summary(m)
@@ -253,11 +250,11 @@ m <- lm(scale(varAroundOut) ~ scale(affPol), varDf2)
 summary(m)
 ```
 
-## For Info
+\## For Info
 
 In Study 1, people in info condition deviate more from outgroup and in Study 2, people in info condition deviate less from ingroup. Not statistical replications, but conceptually are consistent.
 
-### Study 1
+\### Study 1
 
 ```{r}
 m <- lm(scale(varAroundIn) ~ Info, varDf1)
@@ -269,7 +266,7 @@ summary(m)
 ggpredict(m, c("Info") ) %>% plot()
 ```
 
-### Study 2
+\### Study 2
 
 ```{r}
 m <- lm(scale(varAroundIn) ~ Info, varDf2)
@@ -280,9 +277,9 @@ m <- lm(scale(varAroundOut) ~ Info, varDf2)
 summary(m)
 ```
 
-# Reputation Effect
+\# Reputation Effect
 
-Reputation effect does not pan out. this probably needs to be cleaned up.
+**Reputation effect does not pan out. this probably needs to be cleaned up.**
 
 ```{r}
 demDf1 <- subset(longDf1, partyN=="Dem")
@@ -304,7 +301,6 @@ ggpredict(m3, c("bootInOut", "RepN", "Info") ) %>% plot()
 ```
 
 ```{r}
-
 demDf2 <- subset(longDf2, partyN=="Dem")
 m1 <- lmer(eval ~ RepN*bootInOut*Info + ( bootInOut | subID) + ( 1 | issues), data = demDf2, control=lmerControl(optimizer="bobyqa",
                                 optCtrl=list(maxfun=2e5)))
@@ -324,7 +320,6 @@ ggpredict(m3, c("bootInOut", "RepN", "Info") ) %>% plot()
 ```
 
 ```{r}
-
 m3 <- lmer(eval ~ RepN * bootInOut * partyN + ( bootInOut | subID) + ( 1 | issues), data = longDf1, control=lmerControl(optimizer="bobyqa",
                                 optCtrl=list(maxfun=2e5)))
 summary(m3)
@@ -357,7 +352,6 @@ ggpredict(m3, c("bootInOut", "RepN") ) %>% plot()
 ```
 
 ```{r}
-
 demDf2 <- subset(longDf2, partyN=="Dem")
 m1 <- lmer(eval ~ RepN*bootInOut + ( bootInOut | subID) + ( RepN | issues), data = demDf2, control=lmerControl(optimizer="bobyqa",
                                 optCtrl=list(maxfun=2e5)))
@@ -375,7 +369,6 @@ m3 <- lmer(eval ~ RepN * bootInOut + ( bootInOut | subID) + ( RepN | issues), da
 summary(m3)
 ggpredict(m3, c("bootInOut", "RepN") ) %>% plot()
 ```
-
 
 ```{r}
 demDf2 <- subset(longDf2, partyN=="Dem")
@@ -396,9 +389,9 @@ summary(m3)
 ggpredict(m3, c("bootEvalIn", "RepN") ) %>% plot()
 ```
 
-# Info
+\# Info
 
-More extreme views when receiving info
+**\*\*More extreme views when receiving info**\*\*
 
 ```{r}
 m <- lmer( scale(eval) ~ scale(inMinOut) * Info  + ( scale(inMinOut) | subID) + (1 | issues), data = longDf1, control=lmerControl(optimizer="bobyqa",
@@ -427,10 +420,10 @@ ggpredict(m, c("inMinOut", "affPol", "Info")) %>% plot()
 ggpredict(m, c("inMinOut", "Info")) %>% plot()
 ggpredict(m, c("inMinOut", "affPol")) %>% plot()
 ```
+
 People higher in affective polarization evaluate exhibit extreme responses to information, exhibiting high approval for ingroup favored issues and high disapproval for outgroup favored issues.
 
 ```{r}
-
 m <- lmer( scale(eval) ~ scale(inMinOut) * scale(affPol)  + ( scale(inMinOut) + scale(affPol) | subID) + (1 | issues), data = InfoDf1, control=lmerControl(optimizer="bobyqa",
                                 optCtrl=list(maxfun=2e5)))
 summary(m)
@@ -441,9 +434,3 @@ m <- lmer( scale(eval) ~ scale(inMinOut) * scale(affPol)  + ( scale(inMinOut) + 
 summary(m)
 ggpredict(m, c("inMinOut", "affPol")) %>% plot()
 ```
-
-
-
-
-
-
