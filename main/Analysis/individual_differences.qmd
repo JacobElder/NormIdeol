@@ -1,0 +1,103 @@
+---
+title: "Individual_differences"
+format: html
+editor: visual
+---
+
+
+## Similarity and Individual Differences
+
+```{r}
+m1 <- lmer( scale(dist) ~ scale(corr) * Trump + ( scale(corr) | subID), data = distDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m1)
+
+
+
+
+m2 <- lmer( scale(dist) ~ scale(corr) * Trump + ( scale(corr) | subID), data = distDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m2)
+
+ggpredict(m1, c("corr", "Trump")) %>% plot()
+ggpredict(m2, c("corr", "Trump")) %>% plot()
+```
+
+```{r}
+m1 <- lmer( scale(dist) ~ scale(corr) * scale(WSC) + ( scale(corr) | subID), data = distDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m1)
+
+
+
+
+m2 <- lmer( scale(dist) ~ scale(corr) * scale(WSC) + ( scale(corr) | subID), data = distDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m2)
+
+ggpredict(m1, c("corr", "WSC")) %>% plot()
+ggpredict(m2, c("corr", "WSC")) %>% plot()
+
+```
+
+```{r}
+m1 <- lmer( scale(dist) ~ scale(corr) * scale(MLAM) + ( scale(corr) | subID), data = distDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m1)
+
+
+
+
+m2 <- lmer( scale(dist) ~ scale(corr) * scale(MLAM) + ( scale(corr) | subID), data = distDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m2)
+ggpredict(m1, c("corr", "MLAM")) %>% plot()
+ggpredict(m2, c("corr", "MLAM")) %>% plot()
+```
+
+```{r}
+m1 <- lmer( scale(dist) ~ scale(corr) * scale(NFC) + ( scale(corr) | subID), data = distDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m1)
+
+
+
+
+m2 <- lmer( scale(dist) ~ scale(corr) * scale(NFC) + ( scale(corr) | subID), data = distDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m2)
+ggpredict(m1, c("corr", "NFC")) %>% plot()
+ggpredict(m2, c("corr", "NFC")) %>% plot()
+```
+
+```{r}
+m1 <- lmer( scale(dist) ~ scale(corr) * scale(SGO.wt) + ( scale(corr) | subID), data = distDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m1)
+
+
+
+
+m2 <- lmer( scale(dist) ~ scale(corr) * scale(SGO.wt) + ( scale(corr) | subID), data = distDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m2)
+
+ggpredict(m1, c("corr", "SGO.wt")) %>% plot()
+ggpredict(m2, c("corr", "SGO.wt")) %>% plot()
+```
+
+```{r}
+m1 <- lmer( scale(dist) ~ scale(corr) * scale(SGO.st) + ( scale(corr) | subID), data = distDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m1)
+
+
+
+
+m2 <- lmer( scale(dist) ~ scale(corr) * scale(SGO.st) + ( scale(corr) | subID), data = distDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m2)
+
+ggpredict(m1, c("corr", "SGO.st")) %>% plot()
+ggpredict(m2, c("corr", "SGO.st")) %>% plot()
+```
