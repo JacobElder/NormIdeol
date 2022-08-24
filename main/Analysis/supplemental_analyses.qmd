@@ -12,7 +12,7 @@ output:
 
 ```{r, include=F}
 library(groundhog)
-pkgs <-  c("corrr","tidyverse","ggplot2","lme4","lmerTest", "ggeffects", "sjPlot", "insight", "data.table", "here", "arrow", "jtools", "r2mlm")
+pkgs <-  c("corrr","tidyverse","ggplot2","lme4","lmerTest", "ggeffects", "sjPlot", "insight", "data.table", "here", "arrow", "jtools", "r2glmm")
 groundhog.day <- '2022-07-25'
 groundhog.library(pkgs, groundhog.day)
 here::i_am("main/Analysis/reportingResults.Rmd")
@@ -73,7 +73,8 @@ issueDf2 <- longDf2[!duplicated(longDf2$issues),]
 m_sim_Info_1 <- lmer( scale(dist) ~ scale(corr) * Info + ( scale(corr) | subID), data = distDf1, control=lmerControl(optimizer="bobyqa",
                                 optCtrl=list(maxfun=2e5)))
 summary(m_sim_Info_1)
-m_sim_rep_2_CI <- confint(m_sim_Info_1, method= "Wald")
+m_sim_Info_1_CI <- confint(m_sim_Info_1, method= "Wald")
+m_sim_Info_1_R2 <- r2beta(m_sim_Info_1)
 ```
 
 ### Study 2
@@ -83,6 +84,7 @@ m_sim_Info_2 <- lmer( scale(dist) ~ scale(corr) * Info + ( scale(corr) | subID),
                                 optCtrl=list(maxfun=2e5)))
 summary(m_sim_Info_2)
 m_sim_Info_2_CI <- confint(m_sim_Info_2, method= "Wald")
+m_sim_Info_2_R2 <- r2beta(m_sim_Info_2)
 ```
 
 ## Effect of Affective Polarization
@@ -137,14 +139,13 @@ summary(m_sim_Info_Rep_1)
 m_sim_Info_Rep_1_CI <- confint(m_sim_Info_Rep_1, method= "Wald")
 ```
 
-
-### Study 1
+### Study 2
 
 ```{r}
-m_sim_Info_Rep_1 <- lmer( scale(dist) ~ scale(corr) * Info * scale(affPol) + ( scale(corr) | subID), data = distDf1, control=lmerControl(optimizer="bobyqa",
+m_sim_Info_Rep_2 <- lmer( scale(dist) ~ scale(corr) * Info * scale(affPol) + ( scale(corr) | subID), data = distDf2, control=lmerControl(optimizer="bobyqa",
                                 optCtrl=list(maxfun=2e5)))
-summary(m_sim_Info_Rep_1)
-m_sim_Info_Rep_1_CI <- confint(m_sim_Info_Rep_1, method= "Wald")
+summary(m_sim_Info_Rep_2)
+m_sim_Info_Rep_2_CI <- confint(m_sim_Info_Rep_2, method= "Wald")
 ```
 
 # Ideological Consistency as Variance Around Ingroup and Outgroup
@@ -157,14 +158,11 @@ m_sim_Info_Rep_1_CI <- confint(m_sim_Info_Rep_1, method= "Wald")
 m_cons_in_Info_1 <- lm(scale(varAroundIn) ~ Info, varDf1)
 summary(m_cons_in_Info_1)
 m_cons_in_Info_1_CI <- confint(m_cons_in_Info_1, method= "Wald")
-
-ggpredict(m_cons_in_Info_1, c("Info") ) %>% plot()
+m_cons_in_Info_1_CI <- r2beta(m_cons_in_Info_1, method= "Wald")
 
 m_cons_out_Info_1 <- lm(scale(varAroundOut) ~ Info, varDf1)
 summary(m_cons_out_Info_1)
 m_cons_out_Info_1_CI  <- confint(m_cons_out_Info_1, method= "Wald")
-
-ggpredict(m_cons_out_Info_1, c("Info") ) %>% plot()
 ```
 
 ### Study 2
@@ -173,7 +171,6 @@ ggpredict(m_cons_out_Info_1, c("Info") ) %>% plot()
 m_cons_in_Info_2 <- lm(scale(varAroundIn) ~ Info, varDf2)
 summary(m_cons_in_Info_2)
 m_cons_in_Info_2_CI  <- confint(m_cons_in_Info_2, method= "Wald")
-ggpredict(m_cons_in_Info_2, c("Info") ) %>% plot()
 
 m_cons_out_Info_2<- lm(scale(varAroundOut) ~ Info, varDf2)
 summary(m_cons_out_Info_2)
@@ -193,7 +190,6 @@ m_cons_in_Aff_1_CI  <- confint(m_cons_in_Aff_1, method= "Wald")
 m_cons_out_Aff_1 <- lm(scale(varAroundOut) ~ scale(affPol), varDf1)
 summary(m_cons_out_Aff_1)
 m_cons_out_Aff_1_CI  <- confint(m_cons_out_Aff_1, method= "Wald")
-
 ```
 
 ### Study 2
