@@ -66,7 +66,6 @@ InfoDf2 <- subset(longDf2, Info == "Info")
 issueDf2 <- longDf2[!duplicated(longDf2$issues),]
 ```
 
-
 # Demographics
 
 ```{r}
@@ -104,6 +103,7 @@ polit_2 <- prop.table(table(longDf2$Polit))
 ```
 
 # correlations between issues
+
 ```{r}
 choice <- longDf1[grep("Pro-choice", longDf1$Final.Phrasing),]
 guns <- longDf1[grep("purchase guns", longDf1$Final.Phrasing),]
@@ -112,10 +112,9 @@ temperatures <- longDf1[grep("LGBT", longDf1$Final.Phrasing),]
 cor.test(choice$eval, guns$eval)
 ```
 
-
 # Similarity of Issues Predicting Similarity of Evaluations
 
-## main effect of similarity 
+## main effect of similarity
 
 ### Study 1
 
@@ -227,7 +226,6 @@ summary(m_sim_Info_Rep_2)
 m_sim_Info_Rep_1_CI <- confint(m_sim_Info_Rep_2, method= "Wald")
 ```
 
-
 ## Interaction between Info and AffPol
 
 ### Study 1
@@ -237,6 +235,15 @@ m_sim_Info_Rep_1 <- lmer( scale(dist) ~ scale(corr) * Info * scale(affPol) + ( s
                                 optCtrl=list(maxfun=2e5)))
 summary(m_sim_Info_Rep_1)
 m_sim_Info_Rep_1_CI <- confint(m_sim_Info_Rep_1, method= "Wald")
+```
+
+### Study 2
+
+```{r}
+m_sim_Info_Rep_2 <- lmer( scale(dist) ~ scale(corr) * Info * scale(affPol) + ( scale(corr) | subID), data = distDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m_sim_Info_Rep_2)
+m_sim_Info_Rep_2_CI <- confint(m_sim_Info_Rep_2, method= "Wald")
 ```
 
 # Ideological Consistency as Variance Around Ingroup and Outgroup
@@ -383,7 +390,7 @@ m_pol_main_2_CI  <- confint(m_pol_main_2, method= "Wald")
 ggpredict(m_pol_main_2, c("inMinOut")) %>% plot()
 ```
 
-## effect of Info 
+## effect of Info
 
 ### Study 1
 
@@ -450,7 +457,7 @@ summary(m_pol_Aff_Info_2)
 m_pol_Aff_Info_2_CI  <- confint(m_pol_Aff_Info_2, method= "Wald")
 ```
 
-## Effect of Affective polarization & info *in the same model & reputation
+## Effect of Affective polarization & info \*in the same model & reputation
 
 ### Study 1
 
@@ -471,7 +478,6 @@ m <- lmer( scale(eval) ~ scale(inMinOut) * Info * scale(affPol) + ( scale(inMinO
 summary(m)
 ggpredict(m, c("inMinOut", "affPol", "Info")) %>% plot()
 ```
-
 
 ## Failed pre-registered effects for main effect of RepN on ideology
 
@@ -560,4 +566,3 @@ m3 <- lmer(eval ~ RepN * bootInOut * Info + ( bootInOut | subID) + ( 1 | issues)
 summary(m3)
 ggpredict(m3, c("bootInOut", "RepN", "Info") ) %>% plot()
 ```
-
