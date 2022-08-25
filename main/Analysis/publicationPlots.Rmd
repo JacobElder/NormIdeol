@@ -1,0 +1,105 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(groundhog)
+pkgs <-  c("corrr","tidyverse","ggplot2","lme4","lmerTest", "ggeffects", "sjPlot", "insight", "data.table", "here", "arrow")
+groundhog.day <- '2022-07-25'
+groundhog.library(pkgs, groundhog.day)
+here::i_am("main/Analysis/reportingResults.Rmd")
+```
+
+
+```{r}
+#study 1
+longDf1 <- read_parquet(here("main","analysis","output","PFfullDf.parquet"))
+distDf1 <- read_parquet(here("main","analysis","output","distanceDf.parquet"))
+varDf1 <- read_parquet(here("main","analysis","output","varDf1.parquet"))
+study1_ind <- read.csv(here("main","analysis","output","Study1_indDiff.csv"))
+study1_ind<- study1_ind[,c(2, 4,5,6,7,8,9)]
+
+longDf1 <- merge(longDf1, study1_ind, by = c("subID"), all.x = T)
+longDf1$partyN <- as.factor(longDf1$partyN)
+longDf1$Rep <- as.factor(longDf1$Rep)
+contrasts(longDf1$Rep) <- contr.sum(3)
+longDf1$RepN <- as.factor(longDf1$RepN)
+longDf1$RepN <- relevel(longDf1$RepN,"In")
+longDf1$Info <- as.factor(longDf1$Info)
+contrasts(longDf1$Info) <- contr.sum(2)
+longDf1$partyN <- as.factor(longDf1$partyN)
+contrasts(longDf1$partyN) <- contr.sum(2)
+demDf <- subset(longDf1, partyN == "Dem")
+repDf <- subset(longDf1, partyN == "Rep")
+longDf1$politStre <- as.factor(abs(4-longDf1$Polit))
+InfoDf1 <- subset(longDf1, Info == "Info")
+issueDf1 <- longDf1[!duplicated(longDf1$issues),]
+distDf1$polStrength <- as.factor(abs(4-distDf1$Polit))
+```
+
+
+```{r}
+#study 2
+longDf2 <- read_parquet(here("main","analysis","output","PFfullDf2.parquet"))
+distDf2 <- read_parquet(here("main","analysis","output","distanceDf2.parquet"))
+varDf2 <- read_parquet(here("main","analysis","output","varDf2.parquet"))
+study2_ind <- read.csv(here("main","analysis","output","Study2_indDiff.csv"))
+study2_ind<- study2_ind[,c(2:11, 13:15)]
+longDf2 <- merge(longDf2, study2_ind, by = c("subID"), all.x = T)
+
+longDf2$partyN <- as.factor(longDf2$partyN)
+longDf2$Rep <- as.factor(longDf2$Rep)
+longDf2$Rep <- factor(longDf2$Rep, c("Non","Rep","Dem"))
+longDf2$Rep <- relevel(longDf2$Rep,"Non")
+contrasts(longDf2$Rep) <- contr.sum(3)
+longDf2$RepN <- as.factor(longDf2$RepN)
+longDf2$RepN <- relevel(longDf2$RepN,"In")
+longDf2$Info <- as.factor(longDf2$Info)
+contrasts(longDf2$Info) <- contr.sum(2)
+longDf2$partyN <- as.factor(longDf2$partyN)
+contrasts(longDf2$partyN) <- contr.sum(2)
+demDf <- subset(longDf2, partyN == "Dem")
+repDf <- subset(longDf2, partyN == "Rep")
+longDf2$politStre <- as.factor(abs(4-longDf2$Polit))
+InfoDf2 <- subset(longDf2, Info == "Info")
+issueDf2 <- longDf2[!duplicated(longDf2$issues),]
+```
+
+# Info and Similarity
+
+## Study 1
+
+```{r}
+m <- lmer( dist ~ corr * Info + ( corr | subID), data = distDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m)
+
+ggpredict(m, c("corr","Info")) %>% plot()
+
+p <- ggpredict(m, c("corr","Info"))
+plotOUTPE<-ggplot(p, aes(x, predicted)) +  geom_line(aes(linetype=group, color=group)) + geom_ribbon(aes(ymin=conf.low, ymax=conf.high, fill=group), alpha=0.15) + scale_linetype_discrete(labels = c("Group Norms","No Group Norms")) + scale_color_manual(labels = c("Group Norms","No Group Norms"), values = wes_palette("Darjeeling1")) + scale_fill_manual( 
+                      labels=c("Group Norms","No Group Norms"), values = wes_palette("Darjeeling1")) + theme(
+    legend.position = c(.6, .65),
+    legend.justification = c("left", "bottom"),
+    legend.box.just = "left",
+    legend.margin = margin(6, 6, 6, 6)
+    ) + theme(axis.text=element_text(size=12),
+        axis.title=element_text(size=12,face="bold")) + theme(legend.text = element_text(size=12)) + theme(panel.border = element_rect(colour = "black", fill = NA, size =1)) + theme(legend.title = element_blank()) + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+  xlab("Issue Similarity") + ylab("Rating Similarity")
+plotOUTPE
+```
+
+## Study 2
+
+```{r}
+m <- lmer( dist ~ corr * Info.x + ( scale(corr) | subID), data = distDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m)
+
+ggpredict(m, c("corr","Info.x")) %>% plot()
+```
+
+
+
