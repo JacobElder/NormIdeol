@@ -63,6 +63,19 @@ InfoDf2 <- subset(longDf2, Info == "Info")
 issueDf2 <- longDf2[!duplicated(longDf2$issues),]
 ```
 
+```{r}
+S1Issues <- as.data.frame(unique(longDf1$label))
+S2Issues <-as.data.frame(unique(longDf2$label.y))
+colnames(S1Issues)[1] <- "label"
+colnames(S2Issues)[1] <- "label"         
+
+all_iss <- rbind(S1Issues, S2Issues) 
+all_iss_col <- cbind(S1Issues, S2Issues)   
+length(unique(unique(all_iss$label)))
+
+unique <- length(S1Issues[S1Issues$label %in% S2Issues$label,])
+```
+
 # Similarity of Issues Predicting Similarity of Evaluations
 
 ## Effect of Group Norm
@@ -84,7 +97,6 @@ m_sim_Info_2 <- lmer( scale(dist) ~ scale(corr) * Info + ( scale(corr) | subID),
                                 optCtrl=list(maxfun=2e5)))
 summary(m_sim_Info_2)
 m_sim_Info_2_CI <- confint(m_sim_Info_2, method= "Wald")
-m_sim_Info_2_R2 <- r2beta(m_sim_Info_2)
 ```
 
 ## Effect of Affective Polarization
@@ -163,6 +175,8 @@ m_cons_in_Info_1_CI <- r2beta(m_cons_in_Info_1, method= "Wald")
 m_cons_out_Info_1 <- lm(scale(varAroundOut) ~ Info, varDf1)
 summary(m_cons_out_Info_1)
 m_cons_out_Info_1_CI  <- confint(m_cons_out_Info_1, method= "Wald")
+m_cons_out_Info_1_CI <- r2beta(m_cons_out_Info_1, method= "Wald")
+
 ```
 
 ### Study 2
