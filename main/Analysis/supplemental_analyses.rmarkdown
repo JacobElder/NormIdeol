@@ -12,7 +12,9 @@ output:
 knitr::opts_chunk$set(echo=FALSE, include = FALSE, warning=FALSE, message=FALSE)
 ```
 
+
 # Load in packages
+
 
 ```{r, include=F}
 library(groundhog)
@@ -22,7 +24,9 @@ groundhog.library(pkgs, groundhog.day)
 here::i_am("main/Analysis/reportingResults.Rmd")
 ```
 
+
 # Load in Data
+
 
 ```{r, include=F}
 #study 1
@@ -80,6 +84,7 @@ length(unique(unique(all_iss$label)))
 unique <- length(S1Issues[S1Issues$label %in% S2Issues$label,])
 ```
 
+
 # Ideological Consistency
 
 ## Coherence: Similarity of Issues Predicting Similarity of Evaluations
@@ -88,6 +93,7 @@ unique <- length(S1Issues[S1Issues$label %in% S2Issues$label,])
 
 #### Study 1
 
+
 ```{r}
 m_sim_Info_1 <- lmer( scale(dist) ~ scale(corr) * Info + ( scale(corr) | subID), data = distDf1, control=lmerControl(optimizer="bobyqa",
                                 optCtrl=list(maxfun=2e5)))
@@ -95,7 +101,9 @@ summ(m_sim_Info_1)
 confint(m_sim_Info_1, method= "Wald")
 ```
 
+
 #### Study 2
+
 
 ```{r}
 m_sim_Info_2 <- lmer( scale(dist) ~ scale(corr) * Info + ( scale(corr) | subID), data = distDf2, control=lmerControl(optimizer="bobyqa",
@@ -104,9 +112,11 @@ summ(m_sim_Info_2)
 confint(m_sim_Info_2, method= "Wald")
 ```
 
+
 ### Effect of Affective Polarization
 
 #### Study 1
+
 
 ```{r}
 m_sim_Aff_1<- lmer( scale(dist) ~ scale(corr) * scale(affPol) + ( scale(corr) | subID), data = distDf1, control=lmerControl(optimizer="bobyqa",
@@ -115,7 +125,9 @@ summ(m_sim_Aff_1)
 confint(m_sim_Aff_1, method= "Wald")
 ```
 
+
 #### Study 2
+
 
 ```{r}
 m_sim_Aff_2 <- lmer( scale(dist) ~ scale(corr) * scale(affPol) + ( scale(corr) | subID), data = distDf2, control=lmerControl(optimizer="bobyqa",
@@ -124,9 +136,11 @@ summ(m_sim_Aff_2)
 confint(m_sim_Aff_2, method= "Wald")
 ```
 
+
 ### Interaction between Group Norms and Surveyor Affiliation
 
 #### Study 1
+
 
 ```{r}
 m_sim_Info_Rep_1 <- lmer( scale(dist) ~ scale(corr) * Info * RepN + ( scale(corr) | subID), data = distDf1, control=lmerControl(optimizer="bobyqa",
@@ -135,7 +149,9 @@ summ(m_sim_Info_Rep_1)
 confint(m_sim_Info_Rep_1, method= "Wald")
 ```
 
+
 #### Study 2
+
 
 ```{r}
 m_sim_Info_Rep_2 <- lmer( scale(dist) ~scale(corr) * Info * RepN  + ( scale(corr) | subID), data = distDf2, control=lmerControl(optimizer="bobyqa",
@@ -144,9 +160,11 @@ summ(m_sim_Info_Rep_2)
 confint(m_sim_Info_Rep_2, method= "Wald")
 ```
 
+
 ### Interaction between Group Norms and Affective Polarization
 
 #### Study 1
+
 
 ```{r}
 m_sim_Info_Rep_1 <- lmer( scale(dist) ~ scale(corr) * Info * scale(affPol) + ( scale(corr) | subID), data = distDf1, control=lmerControl(optimizer="bobyqa",
@@ -155,7 +173,9 @@ summ(m_sim_Info_Rep_1)
 confint(m_sim_Info_Rep_1, method= "Wald")
 ```
 
+
 #### Study 2
+
 
 ```{r}
 m_sim_Info_Rep_2 <- lmer( scale(dist) ~ scale(corr) * Info * scale(affPol) + ( scale(corr) | subID), data = distDf2, control=lmerControl(optimizer="bobyqa",
@@ -165,11 +185,13 @@ confint(m_sim_Info_Rep_2, method= "Wald")
 ```
 
 
+
 ## Consistency as alignment or deviation from in-party and out-party
 
 ### For Group Norm manipulation
 
 #### Study 1
+
 
 ```{r}
 print("in-party effects")
@@ -184,7 +206,9 @@ confint(m_cons_out_Info_1, method= "Wald")
 r2beta(m_cons_out_Info_1, method= "Wald")
 ```
 
+
 #### Study 2
+
 
 ```{r}
 print("in-party effects")
@@ -199,9 +223,11 @@ confint(m_cons_out_Info_2, method= "Wald")
 r2beta(m_cons_out_Info_2, method= "Wald")
 ```
 
+
 ### Effect of Affective Polarization
 
 #### Study 1
+
 
 ```{r}
 print("in-party effects")
@@ -216,7 +242,9 @@ confint(m_cons_out_Aff_1, method= "Wald")
 r2beta(m_cons_out_Aff_1, method= "Wald")
 ```
 
+
 #### Study 2
+
 
 ```{r}
 print("in-party effects")
@@ -232,9 +260,11 @@ confint(m_cons_out_Aff_2, method= "Wald")
 r2beta(m_cons_out_Aff_2, method= "Wald")
 ```
 
+
 ### Surveyor Affiliation Manipulation
 
 #### Study 1
+
 
 ```{r}
 print("in-party effects")
@@ -250,7 +280,9 @@ confint(m_cons_out_Rep_1, method= "Wald")
 r2beta(m_cons_out_Rep_1)
 ```
 
+
 #### Study 2
+
 
 ```{r}
 print("in-party effects")
@@ -266,11 +298,13 @@ confint(m_cons_out_Rep_2, method= "Wald")
 r2beta(m_cons_out_Rep_2)
 ```
 
+
 ## Ideological polarization models
 
 ### main effect of inter-group favorability
 
 #### Study 1
+
 
 ```{r}
 m_pol_main_1 <- lmer( scale(eval) ~ scale(inMinOut) + ( scale(inMinOut) | subID) + (1 | issues), data = longDf1, control=lmerControl(optimizer="bobyqa",
@@ -280,7 +314,9 @@ confint(m_pol_main_1, method= "Wald")
 r2beta(m_pol_main_1)
 ```
 
+
 #### Study 2
+
 
 ```{r}
 m_pol_main_2 <- lmer( scale(eval) ~ scale(inMinOut) + ( scale(inMinOut) | subID) + (1 | issues), data = longDf2, control=lmerControl(optimizer="bobyqa",
@@ -290,9 +326,11 @@ confint(m_pol_main_2, method= "Wald")
 r2beta(m_pol_main_2)
 ```
 
+
 ### Effect of Norm Ratings
 
 #### Study 1
+
 
 ```{r}
 m_pol_Info_1 <- lmer( scale(eval) ~ scale(inMinOut) * Info  + ( scale(inMinOut) | subID) + (1 | issues), data = longDf1, control=lmerControl(optimizer="bobyqa",
@@ -302,7 +340,9 @@ confint(m_pol_Info_1, method= "Wald")
 r2beta(m_pol_Info_1)
 ```
 
+
 #### Study 2
+
 
 ```{r}
 m_pol_Info_2 <- lmer( scale(eval) ~ scale(inMinOut) * Info  + ( scale(inMinOut) | subID) + (1 | issues), data = longDf2, control=lmerControl(optimizer="bobyqa",
@@ -312,9 +352,11 @@ confint(m_pol_Info_2, method= "Wald")
 r2beta(m_pol_Info_2)
 ```
 
+
 ### Effect of Affective polarization
 
 #### Study 1
+
 
 ```{r}
 m_pol_Aff_1<- lmer( scale(eval) ~ scale(inMinOut) * scale(affPol) + ( scale(inMinOut) + scale(affPol) | subID) + (1 | issues), data = longDf1, control=lmerControl(optimizer="bobyqa",
@@ -324,7 +366,9 @@ confint(m_pol_Aff_1, method= "Wald")
 r2beta(m_pol_Aff_1)
 ```
 
+
 #### Study 2
+
 
 ```{r}
 m_pol_Aff_2 <- lmer( scale(eval) ~ scale(inMinOut) * scale(affPol) +scale(inMinOut) + ( scale(inMinOut) + scale(affPol) | subID) + (1 | issues), data = longDf2, control=lmerControl(optimizer="bobyqa",
@@ -334,9 +378,11 @@ confint(m_pol_Aff_2, method= "Wald")
 r2beta(m_pol_Aff_2)
 ```
 
+
 ## Effect of Affective polarization & Group Norms in the same model
 
 ### Study 1
+
 
 ```{r}
 m_pol_Aff_Info_1 <- lmer( scale(eval) ~ scale(inMinOut) * scale(affPol) +scale(inMinOut) * as.factor(Info) + ( scale(inMinOut) + scale(affPol) | subID) + (1 | issues), data = longDf1, control=lmerControl(optimizer="bobyqa",
@@ -346,7 +392,9 @@ confint(m_pol_Aff_Info_1, method= "Wald")
 r2beta(m_pol_Aff_Info_1)
 ```
 
+
 ### Study 2
+
 
 ```{r}
 m_pol_Aff_Info_2<- lmer( scale(eval) ~ scale(inMinOut) * scale(affPol) +scale(inMinOut) * scale(inMinOut) *  Info + ( scale(inMinOut) + scale(affPol) | subID) + (1 | issues), data = longDf2, control=lmerControl(optimizer="bobyqa",
@@ -356,9 +404,11 @@ confint(m_pol_Aff_Info_2, method= "Wald")
 r2beta(m_pol_Aff_Info_2)
 ```
 
+
 ### Effect of Affective polarization & Group Norms in the same model & reputation
 
 ### Study 1
+
 
 ```{r}
 m_pol_Aff_Info_three_1 <- lmer( scale(eval) ~ scale(inMinOut) * Info * scale(affPol)  + ( scale(inMinOut) | subID) + (1 | issues), data = longDf1, control=lmerControl(optimizer="bobyqa",
@@ -368,7 +418,9 @@ confint(m_pol_Aff_Info_three_1, method= "Wald")
 r2beta(m_pol_Aff_Info_three_1)
 ```
 
+
 ### Study 2
+
 
 ```{r}
 m_pol_Aff_Info_three_2 <- lmer( scale(eval) ~ scale(inMinOut) * Info * scale(affPol) + ( scale(inMinOut) | subID) + (1 | issues), data = longDf2, control=lmerControl(optimizer="bobyqa",
@@ -377,9 +429,11 @@ summ(m_pol_Aff_Info_three_2)
 confint(m_pol_Aff_Info_three_2, method= "Wald")
 ```
 
+
 ### Failed pre-registered effects for main effect of Surveyor Affiliation on ideology
 
 #### Study 1
+
 
 ```{r}
 m <- lmer(eval ~ RepN * bootInOut + ( bootInOut | subID) + ( RepN | issues), data = longDf2, control=lmerControl(optimizer="bobyqa",
@@ -387,7 +441,9 @@ m <- lmer(eval ~ RepN * bootInOut + ( bootInOut | subID) + ( RepN | issues), dat
 summ(m)
 ```
 
+
 ### Study 2
+
 
 ```{r}
 m <- lmer(eval ~ RepN * bootEvalIn + ( bootEvalIn | subID) + ( 1 | issues), data = longDf2, control=lmerControl(optimizer="bobyqa",
@@ -395,9 +451,11 @@ m <- lmer(eval ~ RepN * bootEvalIn + ( bootEvalIn | subID) + ( 1 | issues), data
 summ(m)
 ```
 
+
 ### Interaction between Group Norms and Surveyor Affiliation according to pre-registration
 
 #### Study 1
+
 
 ```{r}
 m <- lmer(eval ~ RepN * bootInOut * Info + ( bootInOut | subID) + ( 1 | issues), data = longDf1, control=lmerControl(optimizer="bobyqa",
@@ -405,7 +463,9 @@ m <- lmer(eval ~ RepN * bootInOut * Info + ( bootInOut | subID) + ( 1 | issues),
 summ(m)
 ```
 
+
 #### Study 2
+
 
 ```{r}
 m <- lmer(eval ~ RepN * bootInOut * Info + ( bootInOut | subID) + ( 1 | issues), data = longDf2, control=lmerControl(optimizer="bobyqa",
@@ -413,18 +473,23 @@ m <- lmer(eval ~ RepN * bootInOut * Info + ( bootInOut | subID) + ( 1 | issues),
 summ(m)
 ```
 
+
 ### Pre-registered Analysis reverse scoring to reflect in-party favorable responses
 
 #### Study 1
+
 
 ```{r}
 m<-lmer(toInG ~ RepN*Info  + ( 1 |subID) + (1 | issues), data=longDf1)
 summ(m)
 ```
 
+
 #### Study 2
+
 
 ```{r}
 m<-lmer(toInG ~ RepN*Info  + ( 1 |subID) + (1 | issues), data=longDf2)
 summ(m)
 ```
+

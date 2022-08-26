@@ -319,7 +319,6 @@ m_cons_in_Rep_1_CI  <- confint(m_cons_in_Rep_1, method= "Wald")
 m_cons_out_Rep_1<- lm(scale(varAroundOut) ~ RepN, varDf1)
 summary(m_cons_out_Rep_1)
 m_cons_out_Rep_1_CI  <- confint(m_cons_out_Rep_1, method= "Wald")
-
 ```
 
 ### Study 2
@@ -333,7 +332,6 @@ m_cons_in_Rep_2_CI  <- confint(m_cons_in_Rep_2, method= "Wald")
 m_cons_out_Rep_2 <- lm(scale(varAroundOut) ~ RepN, varDf2)
 summary(m_cons_out_Rep_2)
 m_cons_out_Rep_2_CI  <- confint(m_cons_out_Rep_2, method= "Wald")
-
 ```
 
 ## Aff pol with Info manipulation
