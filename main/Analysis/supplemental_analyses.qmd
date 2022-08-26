@@ -164,7 +164,6 @@ summ(m_sim_Info_Rep_2)
 confint(m_sim_Info_Rep_2, method= "Wald")
 ```
 
-
 ## Consistency as alignment or deviation from in-party and out-party
 
 ### For Group Norm manipulation
@@ -173,30 +172,36 @@ confint(m_sim_Info_Rep_2, method= "Wald")
 
 ```{r}
 print("in-party effects")
-m_cons_in_Info_1 <- lm(scale(varAroundIn) ~ Info, varDf1)
-summ(m_cons_in_Info_1)
+m_cons_in_Info_1 <- lmer( scale(inDev) ~ Info +  ( 1 | subID) + (1 | issues), data = longDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m_cons_in_Info_1)
 confint(m_cons_in_Info_1, method= "Wald")
-r2beta(m_cons_in_Info_1, method= "Wald")
+r2beta(m_cons_in_Info_1)
 
-m_cons_out_Info_1 <- lm(scale(varAroundOut) ~ Info, varDf1)
-summ(m_cons_out_Info_1)
+print("out-party effects")
+m_cons_out_Info_1 <- lmer( scale(outDev) ~ Info + ( 1 | subID) + (1 | issues), data = longDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m_cons_out_Info_1)
 confint(m_cons_out_Info_1, method= "Wald")
-r2beta(m_cons_out_Info_1, method= "Wald")
+r2beta(m_cons_out_Info_1)
 ```
 
 #### Study 2
 
 ```{r}
 print("in-party effects")
-m_cons_in_Info_2 <- lm(scale(varAroundIn) ~ Info, varDf2)
-summ(m_cons_in_Info_2)
+m_cons_in_Info_2 <- lmer( scale(inDev) ~ Info +  ( 1 | subID) + (1 | issues), data = longDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m_cons_in_Info_2)
 confint(m_cons_in_Info_2, method= "Wald")
-r2beta(m_cons_in_Info_2, method= "Wald")
+r2beta(m_cons_in_Info_2)
 
-m_cons_out_Info_2<- lm(scale(varAroundOut) ~ Info, varDf2)
-summ(m_cons_out_Info_2)
+print("out-party effects")
+m_cons_out_Info_2 <- lmer( scale(outDev) ~ Info + ( 1 | subID) + (1 | issues), data = longDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m_cons_out_Info_2)
 confint(m_cons_out_Info_2, method= "Wald")
-r2beta(m_cons_out_Info_2, method= "Wald")
+r2beta(m_cons_out_Info_2)
 ```
 
 ### Effect of Affective Polarization
@@ -205,31 +210,36 @@ r2beta(m_cons_out_Info_2, method= "Wald")
 
 ```{r}
 print("in-party effects")
-m_cons_in_Aff_1 <- lm(scale(varAroundIn) ~ scale(affPol), varDf1)
-summ(m_cons_in_Aff_1)
-confint(m_cons_in_Aff_1, method= "Wald")
-r2beta(m_cons_in_Aff_1_CI, method= "Wald")
+m_cons_in_affPol_1 <- lmer( scale(inDev) ~ scale(affPol) +  ( 1 | subID) + (1 | issues), data = longDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m_cons_in_affPol_1)
+confint(m_cons_in_affPol_1, method= "Wald")
+r2beta(m_cons_in_affPol_1)
 
-m_cons_out_Aff_1 <- lm(scale(varAroundOut) ~ scale(affPol), varDf1)
-summ(m_cons_out_Aff_1)
-confint(m_cons_out_Aff_1, method= "Wald")
-r2beta(m_cons_out_Aff_1, method= "Wald")
+print("out-party effects")
+m_cons_out_affPol_1 <- lmer( scale(outDev) ~ scale(affPol) + ( 1 | subID) + (1 | issues), data = longDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m_cons_out_affPol_1)
+confint(m_cons_out_affPol_1, method= "Wald")
+r2beta(m_cons_out_affPol_1)
 ```
 
 #### Study 2
 
 ```{r}
 print("in-party effects")
-m_cons_in_Aff_2 <- lm(scale(varAroundIn) ~ scale(affPol), varDf2)
-summ(m_cons_in_Aff_2)
-confint(m_cons_in_Aff_2, method= "Wald")
-r2beta(m_cons_in_Aff_2, method= "Wald")
+m_cons_in_affPol_2 <- lmer( scale(inDev) ~ scale(affPol) +  ( 1 | subID) + (1 | issues), data = longDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m_cons_in_affPol_2)
+confint(m_cons_in_affPol_2, method= "Wald")
+r2beta(m_cons_in_affPol_2)
 
 print("out-party effects")
-m_cons_out_Aff_2 <- lm(scale(varAroundOut) ~ scale(affPol), varDf2)
-summ(m_cons_out_Aff_2)
-confint(m_cons_out_Aff_2, method= "Wald")
-r2beta(m_cons_out_Aff_2, method= "Wald")
+m_cons_out_affPol_2 <- lmer( scale(outDev) ~ scale(affPol) + ( 1 | subID) + (1 | issues), data = longDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m_cons_out_affPol_2)
+confint(m_cons_out_affPol_2, method= "Wald")
+r2beta(m_cons_out_affPol_2)
 ```
 
 ### Surveyor Affiliation Manipulation
@@ -238,14 +248,16 @@ r2beta(m_cons_out_Aff_2, method= "Wald")
 
 ```{r}
 print("in-party effects")
-m_cons_in_Rep_1 <- lm(scale(varAroundIn) ~ RepN, varDf1)
-summ(m_cons_in_Rep_1)
+m_cons_in_Rep_1 <- lmer( scale(inDev) ~ RepN +  ( 1 | subID) + (1 | issues), data = longDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m_cons_in_Rep_1)
 confint(m_cons_in_Rep_1, method= "Wald")
 r2beta(m_cons_in_Rep_1)
 
 print("out-party effects")
-m_cons_out_Rep_1<- lm(scale(varAroundOut) ~ RepN, varDf1)
-summ(m_cons_out_Rep_1)
+m_cons_out_Rep_1 <- lmer( scale(outDev) ~ RepN + ( 1 | subID) + (1 | issues), data = longDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m_cons_out_Rep_1)
 confint(m_cons_out_Rep_1, method= "Wald")
 r2beta(m_cons_out_Rep_1)
 ```
@@ -254,14 +266,16 @@ r2beta(m_cons_out_Rep_1)
 
 ```{r}
 print("in-party effects")
-m_cons_in_Rep_2 <- lm(scale(varAroundIn) ~ RepN, varDf2)
-summ(m_cons_in_Rep_2)
-m_cons_in_Rep_2_CI  <- confint(m_cons_in_Rep_2, method= "Wald")
+m_cons_in_Rep_2 <- lmer( scale(inDev) ~ RepN +  ( 1 | subID) + (1 | issues), data = longDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m_cons_in_Rep_2)
+confint(m_cons_in_Rep_2, method= "Wald")
 r2beta(m_cons_in_Rep_2)
 
 print("out-party effects")
-m_cons_out_Rep_2 <- lm(scale(varAroundOut) ~ RepN, varDf2)
-summ(m_cons_out_Rep_2)
+m_cons_out_Rep_2 <- lmer( scale(outDev) ~ RepN + ( 1 | subID) + (1 | issues), data = longDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m_cons_out_Rep_2)
 confint(m_cons_out_Rep_2, method= "Wald")
 r2beta(m_cons_out_Rep_2)
 ```
