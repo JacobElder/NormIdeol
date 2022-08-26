@@ -5,11 +5,19 @@ output: html_notebook
 
 ```{r}
 library(groundhog)
-pkgs <-  c("corrr","tidyverse","ggplot2","lme4","lmerTest", "ggeffects", "sjPlot", "insight", "data.table", "here", "arrow")
+pkgs <-  c("corrr","tidyverse","lme4","lmerTest", "ggeffects", "sjPlot", "insight", "data.table", "here", "arrow", "ggpubr", "wesanderson")
 groundhog.day <- '2022-07-25'
 groundhog.library(pkgs, groundhog.day)
 here::i_am("main/Analysis/reportingResults.Rmd")
 ```
+
+```{r}
+devtools::source_url("https://raw.githubusercontent.com/JacobElder/MiscellaneousR/master/plotCommAxes.R")
+objectName <- function(input) {
+  deparse(match.call()$input)
+}
+```
+
 
 
 ```{r}
@@ -66,6 +74,10 @@ InfoDf2 <- subset(longDf2, Info == "Info")
 issueDf2 <- longDf2[!duplicated(longDf2$issues),]
 ```
 
+```{r}
+plotswd <- ("/Volumes/GoogleDrive/My Drive/Volumes/Research Project/Preference Falsification/1+2Comb/Plots/")
+```
+
 # Info and Similarity
 
 ## Study 1
@@ -74,11 +86,12 @@ issueDf2 <- longDf2[!duplicated(longDf2$issues),]
 m <- lmer( dist ~ corr * Info + ( corr | subID), data = distDf1, control=lmerControl(optimizer="bobyqa",
                                 optCtrl=list(maxfun=2e5)))
 summary(m)
+```
 
-ggpredict(m, c("corr","Info")) %>% plot()
 
+```{r}
 p <- ggpredict(m, c("corr","Info"))
-plotOUTPE<-ggplot(p, aes(x, predicted)) +  geom_line(aes(linetype=group, color=group)) + geom_ribbon(aes(ymin=conf.low, ymax=conf.high, fill=group), alpha=0.15) + scale_linetype_discrete(labels = c("Group Norms","No Group Norms")) + scale_color_manual(labels = c("Group Norms","No Group Norms"), values = wes_palette("Darjeeling1")) + scale_fill_manual( 
+Sim.Info.S1 <-ggplot(p, aes(x, predicted)) +  geom_line(aes(linetype=group, color=group)) + geom_ribbon(aes(ymin=conf.low, ymax=conf.high, fill=group), alpha=0.15) + scale_linetype_discrete(labels = c("Group Norms","No Group Norms")) + scale_color_manual(labels = c("Group Norms","No Group Norms"), values = wes_palette("Darjeeling1")) + scale_fill_manual( 
                       labels=c("Group Norms","No Group Norms"), values = wes_palette("Darjeeling1")) + theme(
     legend.position = c(.6, .65),
     legend.justification = c("left", "bottom"),
@@ -87,19 +100,228 @@ plotOUTPE<-ggplot(p, aes(x, predicted)) +  geom_line(aes(linetype=group, color=g
     ) + theme(axis.text=element_text(size=12),
         axis.title=element_text(size=12,face="bold")) + theme(legend.text = element_text(size=12)) + theme(panel.border = element_rect(colour = "black", fill = NA, size =1)) + theme(legend.title = element_blank()) + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
 panel.background = element_blank(), axis.line = element_line(colour = "black")) +
-  xlab("Issue Similarity") + ylab("Rating Similarity")
-plotOUTPE
+  xlab("Issue Similarity") + ylab("Rating Dissimilarity")
+Sim.Info.S1
 ```
 
 ## Study 2
 
 ```{r}
-m <- lmer( dist ~ corr * Info.x + ( scale(corr) | subID), data = distDf2, control=lmerControl(optimizer="bobyqa",
+m <- lmer( dist ~ corr * Info + ( corr | subID), data = distDf2, control=lmerControl(optimizer="bobyqa",
                                 optCtrl=list(maxfun=2e5)))
 summary(m)
-
-ggpredict(m, c("corr","Info.x")) %>% plot()
 ```
+
+```{r}
+p <- ggpredict(m, c("corr","Info"))
+Sim.Info.S2 <-ggplot(p, aes(x, predicted)) +  geom_line(aes(linetype=group, color=group)) + geom_ribbon(aes(ymin=conf.low, ymax=conf.high, fill=group), alpha=0.15) + scale_linetype_discrete(labels = c("Group Norms","No Group Norms")) + scale_color_manual(labels = c("Group Norms","No Group Norms"), values = wes_palette("Darjeeling1")) + scale_fill_manual( 
+                      labels=c("Group Norms","No Group Norms"), values = wes_palette("Darjeeling1")) + theme(
+    legend.position = c(.6, .65),
+    legend.justification = c("left", "bottom"),
+    legend.box.just = "left",
+    legend.margin = margin(6, 6, 6, 6)
+    ) + theme(axis.text=element_text(size=12),
+        axis.title=element_text(size=12,face="bold")) + theme(legend.text = element_text(size=12)) + theme(panel.border = element_rect(colour = "black", fill = NA, size =1)) + theme(legend.title = element_blank()) + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+  xlab("Issue Similarity") + ylab("Rating Dissimilarity") + scale_x_continuous(breaks=seq(-1,1,1))
+Sim.Info.S2
+```
+
+```{r}
+Sim.Info.Comb <- plotCommAxes(Sim.Info.S1, Sim.Info.S2, xaxis = "Issue Similarity", yaxis = "Rating Dissimilarity")
+Sim.Info.Comb
+ggsave(paste0(plotswd,objectName(Sim.Info.Comb),".png"), width = 9, height = 6, dpi=500, units="in")
+ggsave(paste0(plotswd,objectName(Sim.Info.Comb),".tiff"), width = 9, height = 6, dpi=500, units="in")
+```
+
+# Affective Polarization and Similarity
+
+## Study 1
+
+```{r}
+m <- lmer( dist ~ corr * affPol + ( corr | subID), data = distDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m)
+```
+
+
+```{r}
+p <- ggpredict(m, c("corr","affPol"))
+Sim.AffPol.S1 <-ggplot(p, aes(x, predicted)) +  geom_line(aes(linetype=group, color=group)) + geom_ribbon(aes(ymin=conf.low, ymax=conf.high, fill=group), alpha=0.15) + scale_linetype_discrete(labels = c("Low Aff. Pol.","Medium Aff. Pol.", "High Aff. Pol.")) + scale_color_manual(labels = c("Low Aff. Pol.","Medium Aff. Pol.", "High Aff. Pol."), values = wes_palette("Darjeeling1")) + scale_fill_manual( 
+                      labels=c("Low Aff. Pol.","Medium Aff. Pol.", "High Aff. Pol."), values = wes_palette("Darjeeling1")) + theme(
+    legend.position = c(.6, .65),
+    legend.justification = c("left", "bottom"),
+    legend.box.just = "left",
+    legend.margin = margin(6, 6, 6, 6)
+    ) + theme(axis.text=element_text(size=12),
+        axis.title=element_text(size=12,face="bold")) + theme(legend.text = element_text(size=12)) + theme(panel.border = element_rect(colour = "black", fill = NA, size =1)) + theme(legend.title = element_blank()) + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+  xlab("Issue Similarity") + ylab("Rating Dissimilarity")
+Sim.AffPol.S1
+```
+
+## Study 2
+
+```{r}
+m <- lmer( dist ~ corr * affPol + ( corr | subID), data = distDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m)
+```
+
+```{r}
+p <- ggpredict(m, c("corr","affPol"))
+Sim.AffPol.S2 <-ggplot(p, aes(x, predicted)) +  geom_line(aes(linetype=group, color=group)) + geom_ribbon(aes(ymin=conf.low, ymax=conf.high, fill=group), alpha=0.15) + scale_linetype_discrete(labels = c("Low Aff. Pol.","Medium Aff. Pol.", "High Aff. Pol.")) + scale_color_manual(labels = c("Low Aff. Pol.","Medium Aff. Pol.", "High Aff. Pol."), values = wes_palette("Darjeeling1")) + scale_fill_manual( 
+                      labels=c("Low Aff. Pol.","Medium Aff. Pol.", "High Aff. Pol."), values = wes_palette("Darjeeling1")) + theme(
+    legend.position = c(.6, .65),
+    legend.justification = c("left", "bottom"),
+    legend.box.just = "left",
+    legend.margin = margin(6, 6, 6, 6)
+    ) + theme(axis.text=element_text(size=12),
+        axis.title=element_text(size=12,face="bold")) + theme(legend.text = element_text(size=12)) + theme(panel.border = element_rect(colour = "black", fill = NA, size =1)) + theme(legend.title = element_blank()) + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+  xlab("Issue Similarity") + ylab("Rating Dissimilarity")  + scale_x_continuous(breaks=seq(-1,1,1))
+Sim.AffPol.S2
+```
+
+```{r}
+Sim.AffPol.Comb <- plotCommAxes(Sim.AffPol.S1, Sim.AffPol.S2, xaxis = "Issue Similarity", yaxis = "Rating Dissimilarity")
+Sim.AffPol.Comb
+ggsave(paste0(plotswd,objectName(Sim.AffPol.Comb),".png"), width = 9, height = 6, dpi=500, units="in")
+ggsave(paste0(plotswd,objectName(Sim.AffPol.Comb),".tiff"), width = 9, height = 6, dpi=500, units="in")
+```
+
+```{r}
+Sim.Comb <- ggarrange(Sim.AffPol.Comb, Sim.Info.Comb, nrow = 2, ncol = 1)
+Sim.Comb
+ggsave(paste0(plotswd,objectName(Sim.Comb),".png"), width = 10, height = 9, dpi=500, units="in")
+ggsave(paste0(plotswd,objectName(Sim.Comb),".tiff"), width = 10, height = 9, dpi=500, units="in")
+```
+
+# Ideological Polarization
+
+## Info
+
+### Study 1
+
+```{r}
+m <- lmer( eval ~ inMinOut*Info + ( inMinOut | subID) + (1 | issues), data = longDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m)
+```
+
+```{r}
+p <- ggpredict(m, c("inMinOut","Info"))
+Norm.Info.S1 <-ggplot(p, aes(x, predicted)) +  geom_line(aes(linetype=group, color=group)) + geom_ribbon(aes(ymin=conf.low, ymax=conf.high, fill=group), alpha=0.15) + scale_linetype_discrete(labels = c("Group Norms","No Group Norms")) + scale_color_manual(labels = c("Group Norms","No Group Norms"), values = wes_palette("Darjeeling1")) + scale_fill_manual( 
+                      labels=c("Group Norms","No Group Norms"), values = wes_palette("Darjeeling1")) + theme(
+    legend.position = c(.6, .20),
+    legend.justification = c("left", "bottom"),
+    legend.box.just = "left",
+    legend.margin = margin(6, 6, 6, 6)
+    ) + theme(axis.text=element_text(size=12),
+        axis.title=element_text(size=12,face="bold")) + theme(legend.text = element_text(size=12)) + theme(panel.border = element_rect(colour = "black", fill = NA, size =1)) + theme(legend.title = element_blank()) + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+  xlab("Inter-Group Favorability") + ylab("Approval Rating") + scale_y_continuous(breaks=seq(1,7,2)) + scale_x_continuous(breaks=seq(-1,1,1)) 
+Norm.Info.S1
+```
+
+### Study 2
+
+```{r}
+m <- lmer( eval ~ inMinOut*Info + ( inMinOut | subID) + (1 | issues), data = longDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m)
+```
+
+```{r}
+p <- ggpredict(m, c("inMinOut","Info"))
+Norm.Info.S2 <-ggplot(p, aes(x, predicted)) +  geom_line(aes(linetype=group, color=group)) + geom_ribbon(aes(ymin=conf.low, ymax=conf.high, fill=group), alpha=0.15) + scale_linetype_discrete(labels = c("Group Norms","No Group Norms")) + scale_color_manual(labels = c("Group Norms","No Group Norms"), values = wes_palette("Darjeeling1")) + scale_fill_manual( 
+                      labels=c("Group Norms","No Group Norms"), values = wes_palette("Darjeeling1")) + theme(
+    legend.position = c(.6, .20),
+    legend.justification = c("left", "bottom"),
+    legend.box.just = "left",
+    legend.margin = margin(6, 6, 6, 6)
+    ) + theme(axis.text=element_text(size=12),
+        axis.title=element_text(size=12,face="bold")) + theme(legend.text = element_text(size=12)) + theme(panel.border = element_rect(colour = "black", fill = NA, size =1)) + theme(legend.title = element_blank()) + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+  xlab("Issue Similarity") + ylab("Rating Dissimilarity")  + scale_x_continuous(breaks=seq(-1,1,1))
+Norm.Info.S2
+```
+
+### Combined
+
+```{r}
+Norm.Info.Comb <- plotCommAxes(Norm.Info.S1, Norm.Info.S2, xaxis = "Inter-Group Favorability", yaxis = "Approval Rating")
+Norm.Info.Comb
+ggsave(paste0(plotswd,objectName(Norm.Info.Comb),".png"), width = 9, height = 6, dpi=500, units="in")
+ggsave(paste0(plotswd,objectName(Norm.Info.Comb),".tiff"), width = 9, height = 6, dpi=500, units="in")
+```
+
+## Affective Polarization
+
+### Study 1
+
+```{r}
+m <- lmer( eval ~ inMinOut*affPol + ( inMinOut | subID) + (1 | issues), data = longDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m)
+```
+
+```{r}
+p <- ggpredict(m, c("inMinOut","affPol"))
+Norm.affPol.S1 <-ggplot(p, aes(x, predicted)) +  geom_line(aes(linetype=group, color=group)) + geom_ribbon(aes(ymin=conf.low, ymax=conf.high, fill=group), alpha=0.15) + scale_linetype_discrete(labels = c("Low Aff. Pol.","Medium Aff. Pol.", "High Aff. Pol.")) + scale_color_manual(labels = c("Low Aff. Pol.","Medium Aff. Pol.", "High Aff. Pol."), values = wes_palette("Darjeeling1")) + scale_fill_manual( 
+                      labels=c("Low Aff. Pol.","Medium Aff. Pol.", "High Aff. Pol."), values = wes_palette("Darjeeling1")) + theme(
+    legend.position = c(.6, .20),
+    legend.justification = c("left", "bottom"),
+    legend.box.just = "left",
+    legend.margin = margin(6, 6, 6, 6)
+    ) + theme(axis.text=element_text(size=12),
+        axis.title=element_text(size=12,face="bold")) + theme(legend.text = element_text(size=12)) + theme(panel.border = element_rect(colour = "black", fill = NA, size =1)) + theme(legend.title = element_blank()) + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+  xlab("Inter-Group Favorability") + ylab("Approval Rating")  + scale_x_continuous(breaks=seq(-1,1,1)) + scale_y_continuous(breaks=seq(1,7,2))
+Norm.affPol.S1
+```
+
+### Study 2
+
+```{r}
+m <- lmer( eval ~ inMinOut*affPol + ( inMinOut | subID) + (1 | issues), data = longDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m)
+```
+
+```{r}
+p <- ggpredict(m, c("inMinOut","affPol"))
+Norm.affPol.S2 <-ggplot(p, aes(x, predicted)) +  geom_line(aes(linetype=group, color=group)) + geom_ribbon(aes(ymin=conf.low, ymax=conf.high, fill=group), alpha=0.15) + scale_linetype_discrete(labels = c("Group Norms","No Group Norms")) + scale_color_manual(labels = c("Group Norms","No Group Norms"), values = wes_palette("Darjeeling1")) + scale_fill_manual( 
+                      labels=c("Group Norms","No Group Norms"), values = wes_palette("Darjeeling1")) + theme(
+    legend.position = c(.6, .20),
+    legend.justification = c("left", "bottom"),
+    legend.box.just = "left",
+    legend.margin = margin(6, 6, 6, 6)
+    ) + theme(axis.text=element_text(size=12),
+        axis.title=element_text(size=12,face="bold")) + theme(legend.text = element_text(size=12)) + theme(panel.border = element_rect(colour = "black", fill = NA, size =1)) + theme(legend.title = element_blank()) + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+  xlab("Inter-Group Favorability") + ylab("Approval Rating")  + scale_x_continuous(breaks=seq(-1,1,1)) 
+Norm.affPol.S2
+```
+
+### Combined
+
+```{r}
+Norm.affPol.Comb <- plotCommAxes(Norm.affPol.S1, Norm.affPol.S2, xaxis = "Inter-Group Favorability", yaxis = "Approval Rating")
+Norm.affPol.Comb
+ggsave(paste0(plotswd,objectName(Norm.affPol.Comb),".png"), width = 9, height = 6, dpi=500, units="in")
+ggsave(paste0(plotswd,objectName(Norm.affPol.Comb),".tiff"), width = 9, height = 6, dpi=500, units="in")
+```
+
+
+```{r}
+Norm.Comb <- ggarrange(Norm.affPol.Comb, Norm.Info.Comb, nrow = 2, ncol = 1)
+Norm.Comb
+ggsave(paste0(plotswd,objectName(Norm.Comb),".png"), width = 10, height = 9, dpi=500, units="in")
+ggsave(paste0(plotswd,objectName(Norm.Comb),".tiff"), width = 10, height = 9, dpi=500, units="in")
+```
+
+
 
 
 
