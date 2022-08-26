@@ -39,6 +39,8 @@ longDf1$politStre <- as.factor(abs(4-longDf1$Polit))
 InfoDf1 <- subset(longDf1, Info == "Info")
 issueDf1 <- longDf1[!duplicated(longDf1$issues),]
 distDf1$polStrength <- as.factor(abs(4-distDf1$Polit))
+longDf1$inDev <- abs(longDf1$eval - longDf1$bootEvalIn)
+longDf1$outDev <- abs(longDf1$eval - longDf1$bootEvalOut)
 
 #study 2
 longDf2 <- read_parquet(here("main","analysis","output","PFfullDf2.parquet"))
@@ -64,6 +66,8 @@ repDf <- subset(longDf2, partyN == "Rep")
 longDf2$politStre <- as.factor(abs(4-longDf2$Polit))
 InfoDf2 <- subset(longDf2, Info == "Info")
 issueDf2 <- longDf2[!duplicated(longDf2$issues),]
+longDf2$inDev <- abs(longDf2$eval - longDf2$bootEvalIn)
+longDf2$outDev <- abs(longDf2$eval - longDf2$bootEvalOut)
 ```
 
 # Demographics
@@ -253,30 +257,33 @@ m_sim_Info_Rep_2_CI <- confint(m_sim_Info_Rep_2, method= "Wald")
 ### Study 1
 
 ```{r}
-m_cons_in_Info_1 <- lm(scale(varAroundIn) ~ Info, varDf1)
-summary(m_cons_in_Info_1)
-m_cons_in_Info_1_CI <- confint(m_cons_in_Info_1, method= "Wald")
+m_cons_in_Info_1 <- lmer( scale(inDev) ~ Info +  ( 1 | subID) + (1 | issues), data = longDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m_cons_out_Info_1)
+m_cons_in_Info_1_CI  <- confint(m_cons_in_Info_1, method= "Wald")
+ggpredict(m_cons_out_Info_1, c("Info")) %>% plot()
 
-ggpredict(m_cons_in_Info_1, c("Info") ) %>% plot()
-
-m_cons_out_Info_1 <- lm(scale(varAroundOut) ~ Info, varDf1)
+m_cons_out_Info_1 <- lmer( scale(outDev) ~ Info + ( 1 | subID) + (1 | issues), data = longDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
 summary(m_cons_out_Info_1)
 m_cons_out_Info_1_CI  <- confint(m_cons_out_Info_1, method= "Wald")
-
-ggpredict(m_cons_out_Info_1, c("Info") ) %>% plot()
+ggpredict(m_cons_out_Info_1, c("Info")) %>% plot()
 ```
 
 ### Study 2
 
 ```{r}
-m_cons_in_Info_2 <- lm(scale(varAroundIn) ~ Info, varDf2)
-summary(m_cons_in_Info_2)
-m_cons_in_Info_2_CI  <- confint(m_cons_in_Info_2, method= "Wald")
-ggpredict(m_cons_in_Info_2, c("Info") ) %>% plot()
+m_cons_in_Info_1 <- lmer( scale(inDev) ~ Info +  ( 1 | subID) + (1 | issues), data = longDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m_cons_out_Info_1)
+m_cons_in_Info_1_CI  <- confint(m_cons_in_Info_1, method= "Wald")
+ggpredict(m_cons_out_Info_1, c("Info")) %>% plot()
 
-m_cons_out_Info_2<- lm(scale(varAroundOut) ~ Info, varDf2)
-summary(m_cons_out_Info_2)
-m_cons_out_Info_2_CI  <- confint(m_cons_out_Info_2, method= "Wald")
+m_cons_out_Info_1 <- lmer( scale(outDev) ~ Info + ( 1 | subID) + (1 | issues), data = longDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m_cons_out_Info_1)
+m_cons_out_Info_1_CI  <- confint(m_cons_out_Info_1, method= "Wald")
+ggpredict(m_cons_out_Info_1, c("Info")) %>% plot()
 ```
 
 ## Affective Polarization
@@ -284,27 +291,33 @@ m_cons_out_Info_2_CI  <- confint(m_cons_out_Info_2, method= "Wald")
 ### Study 1
 
 ```{r}
-m_cons_in_Aff_1 <- lm(scale(varAroundIn) ~ scale(affPol), varDf1)
-summary(m_cons_in_Aff_1)
-m_cons_in_Aff_1_CI  <- confint(m_cons_in_Aff_1, method= "Wald")
+m_cons_in_affPol_1 <- lmer( scale(inDev) ~ scale(affPol) +  ( 1 | subID) + (1 | issues), data = longDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m_cons_out_affPol_1)
+m_cons_in_affPol_1_CI  <- confint(m_cons_in_affPol_1, method= "Wald")
+ggpredict(m_cons_out_affPol_1, c("affPol")) %>% plot()
 
-
-m_cons_out_Aff_1 <- lm(scale(varAroundOut) ~ scale(affPol), varDf1)
-summary(m_cons_out_Aff_1)
-m_cons_out_Aff_1_CI  <- confint(m_cons_out_Aff_1, method= "Wald")
-
+m_cons_out_affPol_1 <- lmer( scale(outDev) ~ scale(affPol) + ( 1 | subID) + (1 | issues), data = longDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m_cons_out_affPol_1)
+m_cons_out_affPol_1_CI  <- confint(m_cons_out_affPol_1, method= "Wald")
+ggpredict(m_cons_out_affPol_1, c("affPol")) %>% plot()
 ```
 
 ### Study 2
 
 ```{r}
-m_cons_in_Aff_2 <- lm(scale(varAroundIn) ~ scale(affPol), varDf2)
-summary(m_cons_in_Aff_2)
-m_cons_in_Aff_2_CI  <- confint(m_cons_in_Aff_2, method= "Wald")
+m_cons_in_affPol_2 <- lmer( scale(inDev) ~ scale(affPol) +  ( 1 | subID) + (1 | issues), data = longDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m_cons_out_affPol_2)
+m_cons_in_affPol_2_CI  <- confint(m_cons_in_affPol_2, method= "Wald")
+ggpredict(m_cons_out_affPol_2, c("affPol","ceiling")) %>% plot()
 
-m_cons_out_Aff_2 <- lm(scale(varAroundOut) ~ scale(affPol), varDf2)
-summary(m_cons_out_Aff_2)
-m_cons_out_Aff_2_CI  <- confint(m_cons_out_Aff_2, method= "Wald")
+m_cons_out_affPol_2 <- lmer( scale(outDev) ~ scale(affPol) + ( 1 | subID) + (1 | issues), data = longDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summary(m_cons_out_affPol_2)
+m_cons_out_affPol_2_CI  <- confint(m_cons_out_affPol_2, method= "Wald")
+ggpredict(m_cons_out_affPol_2, c("affPol")) %>% plot()
 ```
 
 ## RepN manipulation
