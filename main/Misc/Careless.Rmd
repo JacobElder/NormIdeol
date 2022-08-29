@@ -1,0 +1,37 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+pacman::p_load(arrow, tidyverse, here, careless)
+here::i_am("main/Analysis/reportingResults.Rmd")
+```
+
+
+```{r, include =F, echo=F}
+longDf1 <- read_parquet(here("main","analysis","output","PFfullDf.parquet"))
+longDf2 <- read_parquet(here("main","analysis","output","PFfullDf2.parquet"))
+```
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+
+```{r}
+longDf1 <- as.data.frame(longDf1)
+longDfc<- longDf1[c("subID","issues","eval")]
+longDfc <- longDfc[order(longDfc$subID, longDfc$issues),]
+wideDf <- longDfc %>% pivot_wider(names_from = issues, values_from = eval)
+```
+
+
+```{r}
+careless_eo <- evenodd(wideDf[2:101], factors = rep(10,10))
+hist(careless_eo, main = "Histogram of even-odd consistency index")
+careless_irv <- irv(wideDf[2:101], split = TRUE, num.split = 10)
+psychsyn_cor <- psychsyn_critval(wideDf[2:101])
+sum(psychsyn_cor$Freq > .60, na.rm = TRUE)
+example_psychsyn <- psychsyn(wideDf[2:101], critval = .60)
+hist(example_psychsyn, main = "Histogram of psychometrical synonyms index")
+```
+
+
