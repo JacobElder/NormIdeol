@@ -220,7 +220,7 @@ Norm.Info.S1 <-ggplot(p, aes(x, predicted)) +  geom_line(aes(linetype=group, col
     ) + theme(axis.text=element_text(size=12),
         axis.title=element_text(size=12,face="bold")) + theme(legend.text = element_text(size=12)) + theme(panel.border = element_rect(colour = "black", fill = NA, size =1)) + theme(legend.title = element_blank()) + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
 panel.background = element_blank(), axis.line = element_line(colour = "black")) +
-  xlab("Inter-Group Favorability") + ylab("Approval Rating") + scale_y_continuous(breaks=seq(1,7,2)) + scale_x_continuous(breaks=seq(-1,1,1)) 
+  xlab("Inter-Party Favorability") + ylab("Approval Rating") + scale_y_continuous(breaks=seq(1,7,2)) + scale_x_continuous(breaks=seq(-1,1,1)) 
 Norm.Info.S1
 ```
 
@@ -250,7 +250,7 @@ Norm.Info.S2
 ### Combined
 
 ```{r}
-Norm.Info.Comb <- plotCommAxes(Norm.Info.S1, Norm.Info.S2, xaxis = "Inter-Group Favorability", yaxis = "Approval Rating")
+Norm.Info.Comb <- plotCommAxes(Norm.Info.S1, Norm.Info.S2, xaxis = "Inter-Party Favorability", yaxis = "Approval Rating")
 Norm.Info.Comb
 ggsave(paste0(plotswd,objectName(Norm.Info.Comb),".png"), width = 9, height = 6, dpi=500, units="in")
 ggsave(paste0(plotswd,objectName(Norm.Info.Comb),".tiff"), width = 9, height = 6, dpi=500, units="in")
@@ -277,7 +277,7 @@ Norm.affPol.S1 <-ggplot(p, aes(x, predicted)) +  geom_line(aes(linetype=group, c
     ) + theme(axis.text=element_text(size=12),
         axis.title=element_text(size=12,face="bold")) + theme(legend.text = element_text(size=12)) + theme(panel.border = element_rect(colour = "black", fill = NA, size =1)) + theme(legend.title = element_blank()) + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
 panel.background = element_blank(), axis.line = element_line(colour = "black")) +
-  xlab("Inter-Group Favorability") + ylab("Approval Rating")  + scale_x_continuous(breaks=seq(-1,1,1)) + scale_y_continuous(breaks=seq(1,7,2))
+  xlab("Inter-Party Favorability") + ylab("Approval Rating")  + scale_x_continuous(breaks=seq(-1,1,1)) + scale_y_continuous(breaks=seq(1,7,2))
 Norm.affPol.S1
 ```
 
@@ -300,14 +300,14 @@ Norm.affPol.S2 <-ggplot(p, aes(x, predicted)) +  geom_line(aes(linetype=group, c
     ) + theme(axis.text=element_text(size=12),
         axis.title=element_text(size=12,face="bold")) + theme(legend.text = element_text(size=12)) + theme(panel.border = element_rect(colour = "black", fill = NA, size =1)) + theme(legend.title = element_blank()) + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
 panel.background = element_blank(), axis.line = element_line(colour = "black")) +
-  xlab("Inter-Group Favorability") + ylab("Approval Rating")  + scale_x_continuous(breaks=seq(-1,1,1)) 
+  xlab("Inter-Party Favorability") + ylab("Approval Rating")  + scale_x_continuous(breaks=seq(-1,1,1)) 
 Norm.affPol.S2
 ```
 
 ### Combined
 
 ```{r}
-Norm.affPol.Comb <- plotCommAxes(Norm.affPol.S1, Norm.affPol.S2, xaxis = "Inter-Group Favorability", yaxis = "Approval Rating")
+Norm.affPol.Comb <- plotCommAxes(Norm.affPol.S1, Norm.affPol.S2, xaxis = "Inter-Party Favorability", yaxis = "Approval Rating")
 Norm.affPol.Comb
 ggsave(paste0(plotswd,objectName(Norm.affPol.Comb),".png"), width = 9, height = 6, dpi=500, units="in")
 ggsave(paste0(plotswd,objectName(Norm.affPol.Comb),".tiff"), width = 9, height = 6, dpi=500, units="in")
