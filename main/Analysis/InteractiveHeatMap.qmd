@@ -1,0 +1,66 @@
+---
+title: "Interactive Heatmap of Correlations Among Issues"
+author: "Jacob Elder"
+format: html
+editor: visual
+---
+
+```{r, include =F, echo=F}
+library(groundhog)
+pkgs <-  c("heatmaply","pheatmap","gplots","RColorBrewer","tidyverse","arrow","here")
+groundhog.day <- '2022-07-25'
+groundhog.library(pkgs, groundhog.day)
+here::i_am("main/Analysis/reportingResults.Rmd")
+```
+
+```{r, include =F, echo=F}
+longDf1 <- read_parquet(here("main","analysis","output","PFfullDf.parquet"))
+longDf2 <- read_parquet(here("main","analysis","output","PFfullDf2.parquet"))
+```
+
+## Study 1 Interactive Heat Map
+
+```{r, echo=FALSE, include=FALSE, fig.show='hide'}
+longDf1 <- as.data.frame(longDf1)
+longDfc<- longDf1[c("subID","issues","eval")]
+longDfc <- longDfc[order(longDfc$subID, longDfc$issues),]
+wideDf <- longDfc %>% pivot_wider(names_from = issues, values_from = eval)
+
+corMat <- wideDf %>% select(`1`:`100`) %>% cor(.,use="pairwise.complete.obs")
+corMatZ <- psych::fisherz(corMat)
+corVector <- corMatZ[lower.tri(corMatZ)]
+
+colnames(corMat) <- longDf1$label[match(unique(longDf1$issues), longDf1$issues) ]
+rownames(corMat) <- longDf1$label[match(unique(longDf1$issues), longDf1$issues) ]
+
+outphm<-pheatmap(corMat, fontsize_row = 6, fontsize_col = 6, angle_col = 45, angle_row =45, width=100, height = 200 )
+
+```
+
+```{r, echo=FALSE}
+heatmaply_cor(round(corMat,3), Rowv=outphm[[1]], Colv=outphm[[2]], revC=TRUE, fontsize_row = 2.5, fontsize_col = 2.5, angle_col = 45, angle_row =45,  limits = c(-1, 1), colors = colorRampPalette(rev(brewer.pal(n = 7, name =
+  "RdYlBu")))(100) )
+```
+
+## Study 2 Interactive Heat Map
+
+```{r, echo=FALSE, include=FALSE, fig.show='hide'}
+longDf2 <- as.data.frame(longDf2)
+longDfc<- longDf2[c("subID","issues","eval")]
+longDfc <- longDfc[order(longDfc$subID, longDfc$issues),]
+wideDf <- longDfc %>% pivot_wider(names_from = issues, values_from = eval)
+
+corMat <- wideDf %>% select(`1`:`100`) %>% cor(.,use="pairwise.complete.obs")
+corMatZ <- psych::fisherz(corMat)
+corVector <- corMatZ[lower.tri(corMatZ)]
+
+colnames(corMat) <- longDf2$label.x[match(unique(longDf2$issues), longDf2$issues) ]
+rownames(corMat) <- longDf2$label.x[match(unique(longDf2$issues), longDf2$issues) ]
+
+outphm<-pheatmap(corMat, fontsize_row = 6, fontsize_col = 6, angle_col = 45, angle_row =45, width=100, height = 200 )
+```
+
+```{r, echo=FALSE}
+heatmaply_cor(round(corMat,3), Rowv=outphm[[1]], Colv=outphm[[2]], revC=TRUE, fontsize_row = 2.5, fontsize_col = 2.5, angle_col = 45, angle_row =45,  limits = c(-1, 1), colors = colorRampPalette(rev(brewer.pal(n = 7, name =
+  "RdYlBu")))(100) )
+```
