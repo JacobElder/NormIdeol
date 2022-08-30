@@ -14,13 +14,16 @@ longDf1 <- read_parquet(here("main","analysis","output","PFfullDf.parquet"))
 longDf2 <- read_parquet(here("main","analysis","output","PFfullDf2.parquet"))
 ```
 
-Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
-
 ```{r}
 longDf1 <- as.data.frame(longDf1)
 longDfc<- longDf1[c("subID","issues","eval")]
 longDfc <- longDfc[order(longDfc$subID, longDfc$issues),]
 wideDf <- longDfc %>% pivot_wider(names_from = issues, values_from = eval)
+```
+
+```{r}
+careless_long <- longstring(wideDf[2:101])
+boxplot(careless_long, main = "Boxplot of Longstring index")
 ```
 
 
