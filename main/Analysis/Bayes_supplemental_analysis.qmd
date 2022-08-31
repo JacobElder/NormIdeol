@@ -4,22 +4,17 @@ format: html
 editor: visual
 ---
 
-
-```{r global options, include = FALSE}
-knitr::opts_chunk$set(echo=FALSE, include = FALSE, warning=FALSE, message=FALSE)
+```{r global options}
+knitr::opts_chunk$set(echo=FALSE, warning=FALSE, message=FALSE)
 ```
-
-# Load in packages
 
 ```{r, include=F}
 library(groundhog)
-pkgs <-  c("corrr","tidyverse","ggplot2","lme4","lmerTest", "ggeffects", "sjPlot", "insight", "data.table", "here", "arrow", "jtools", "r2glmm")
+pkgs <-  c("corrr","tidyverse","ggplot2","lme4","lmerTest", "ggeffects", "sjPlot", "insight", "data.table", "here", "arrow", "jtools", "r2glmm", "rstanarm", "bayestestR", "logspline")
 groundhog.day <- '2022-07-25'
 groundhog.library(pkgs, groundhog.day)
-here::i_am("main/Analysis/reportingResults.Rmd")
+here::i_am("main/Analysis/Bayes_supplemental_analysis.qmd")
 ```
-
-# Load in Data
 
 ```{r, include=F}
 #study 1
@@ -65,4 +60,213 @@ issueDf2 <- longDf2[!duplicated(longDf2$issues),]
 ```
 
 
+# Bayes naming conventions
 
+ROPE_low = lower null range of the default rope that bayes function specifies based on .1 SD around DV (not particularly useful)
+ROPE_high = upper null range of the default rope that bayes function specifies based on .1 SD around DV (not particularly useful)
+ROPE_Non = default ropes around nonpartisan 
+
+ROPEd_Out = d represents directional (is the null on the side of not the outgroup, i.e. the smaller it is the less of the distribution is conforming more to outgroup). Smaller, shifting more towards outgroup. Can look at top 20 and bottom 20. 
+
+coefNon = median of the distrution 
+
+pdNon = probability of direction (highly correlated with p.value). can look up bayes test r prob of direction. 
+
+oneTailNon = converting pd to p.values
+
+CI_l_non = lower bound of CI for non effect. credibility interval of the posterior distribution. 
+
+BFtoOut_Non = bayes factors that are defined as directional test 
+
+conformOut = posterior is less than 50 conforming more to outgroup. 
+
+## Study 1
+
+```{r}
+all.neg <- function(x) -1*abs(x)
+set.seed(1)
+uids <- unique(longDf1$issues)
+df1Issues <- longDf1[!duplicated(longDf1$Final.Phrasing),]
+bNames <- c("issues", "ROPE_low", "ROPE_high", "coefNon", "pdNon", "oneTailNon", "twoTailNon", "CI_l_non", "CI_h_non", "ROPE_Non", "ROPE_NonL", "ROPE_NonH", "BF0_Non", "BFless_Non", "BFgreat_Non", "BFcenter_Non", "coefOut", "pdOut", "oneTailOut", "twoTailOut", "CI_l_out", "CI_h_out", "ROPE_Out", "ROPE_OutL", "ROPE_OutH", "BF0_Out", "BFless_Out", "BFgreat_Out", "BFcenter_Out")
+bayesRepMat <- matrix(nrow=length(uids), ncol=length(bNames))
+k<-0
+for(n in 1:length(uids)){
+  i<-uids[n]
+  subDf1 <- subset(longDf1, issues == i) #subset each P
+  inGroup<-unique(longDf1$bootEvalIn[longDf1$issues==i])
+  inGroup<-inGroup[!is.na(inGroup)]
+  outGroup<-unique(longDf1$bootEvalOut[longDf1$issues==i])
+  outGroup<-outGroup[!is.na(outGroup)]
+  outindiff <- all.neg(inGroup[1]-inGroup[2])
+  outindiff <- all.neg(unique(longDf1$bootOutIn[longDf1$issues==i])[1])
+  outindiffSD <- unique(longDf1$bootOutInSD[longDf1$issues==i])[1]
+  model <- stan_glm(toInG~RepN, data = subDf1,
+                    refresh=0,
+  prior = normal(outindiff, outindiffSD*10, autoscale = FALSE))
+  posteriors <- describe_posterior(model)
+  BF_0 <-bayesfactor_parameters(model, null = 0)
+  BF_less <-bayesfactor_parameters(model , direction = "<")
+  BF_great <-bayesfactor_parameters(model, direction = ">")
+  BF_center <- bayesfactor_parameters(model, null = c(outindiff/2, -outindiff/2))
+  coefNon <-  posteriors$Median[2]
+  pdNon <-  posteriors$pd[2]
+  oneTailNon <- 1-pdNon
+  twoTailNon <- oneTailNon*2
+  coefOut <-  posteriors$Median[3]
+  pdOut <-  posteriors$pd[3]
+  oneTailOut <- 1-pdOut
+  twoTailOut <- oneTailOut*2
+  CI_l_non <- posteriors$CI_low[2]
+  CI_l_out <- posteriors$CI_low[3]
+  CI_h_non <- posteriors$CI_high[2]
+  CI_h_out <- posteriors$CI_high[3]
+  ROPE_low <- posteriors$ROPE_low[1]
+  ROPE_high <- posteriors$ROPE_high[1]
+  ROPE_Non <- posteriors$ROPE_Percentage[2]
+  ROPE_Out <- posteriors$ROPE_Percentage[3]
+  ROPE_L <- rope(model, range = c(0, Inf))
+  ROPE_H <- rope(model, range = c(-Inf, 0))
+  ROPE_NonH <- ROPE_H$ROPE_Percentage[2]
+  ROPE_OutH <- ROPE_H$ROPE_Percentage[3]
+  ROPE_NonL <- ROPE_L$ROPE_Percentage[2]
+  ROPE_OutL <- ROPE_L$ROPE_Percentage[3]
+  
+  bayesRepMat[n,] <- c(i, ROPE_low, ROPE_high, coefNon, pdNon, oneTailNon, twoTailNon, CI_l_non, CI_h_non, ROPE_Non, ROPE_NonL, ROPE_NonH, exp(BF_0$log_BF[2]), exp(BF_less$log_BF[2]), exp(BF_great$log_BF[2]), exp(BF_center$log_BF[2]), coefOut, pdOut, oneTailOut, twoTailOut, CI_l_out, CI_h_out, ROPE_Out, ROPE_OutL, ROPE_OutH, exp(BF_0$log_BF[3]), exp(BF_less$log_BF[3]), exp(BF_great$log_BF[3]), exp(BF_center$log_BF[3]))
+}
+
+colnames(bayesRepMat) <- bNames
+bayesRepMat <- as.data.frame(bayesRepMat)
+bayesRepMat$CI_out_sig <- 0
+bayesRepMat$CI_out_sig[sign(bayesRepMat$CI_l_out)==sign(bayesRepMat$CI_h_out)] <- 1
+bayesRepMat$CI_non_sig <- 0
+bayesRepMat$CI_non_sig[sign(bayesRepMat$CI_l_non)==sign(bayesRepMat$CI_h_non)] <- 1
+bayesRepMat$CI_out_range <- bayesRepMat$CI_h_out - bayesRepMat$CI_l_out
+bayesRepMat$CI_non_range <- bayesRepMat$CI_h_non - bayesRepMat$CI_l_non
+
+bayesRepMat2 <- merge(bayesRepMat, issueDf1, by="issues")
+bayesRepMat2<-bayesRepMat2[order(-bayesRepMat2$BFless_Out),]
+bayesRepMatS1<-bayesRepMat2
+```
+
+### Percentages for Bayes analyses
+
+```{r}
+paste0("Two tail p's: ", mean(bayesRepMatS1$twoTailOut<.05))
+paste0("One tail p's: ", mean(bayesRepMatS1$oneTailOut<.05))
+paste0("BF greater: ", mean(bayesRepMatS1$BFgreat_Out>1))
+paste0("BF less: ", mean(bayesRepMatS1$BFless_Out>1))
+paste0("ROPE greater: ", mean(bayesRepMatS1$ROPE_OutH<.05))
+paste0("ROPE less: ", mean(bayesRepMatS1$ROPE_OutL<.05))
+paste0("BF less: ", mean(bayesRepMatS1$BFless_Out>1))
+paste0("BF center: ", mean(bayesRepMatS1$BFcenter_Out>1))
+paste0("BF nonzero: ", mean(bayesRepMatS1$BF0_Out>1))
+```
+
+### Print top conform & double down issues
+
+```{r}
+
+```
+
+### Differences in outgroup-conforming vs. ingroup-conforming issues
+
+```{r}
+bayesRepMatS1$foc <- bayesRepMatS1$BFgreat_Out > bayesRepMatS1$BFless_Out
+bayesRepMatS1$foc2 <- bayesRepMatS1$ROPE_OutL < .50
+bayesRepMatS1$foc3 <- "Neut"
+bayesRepMatS1$foc3[bayesRepMatS1$ROPE_OutL < .10] <- "toOut"
+bayesRepMatS1$foc3[bayesRepMatS1$ROPE_OutL > .90] <- "toIn"
+
+longDf1 <- merge(longDf1, bayesRepMatS1[c("issues","foc","foc2","foc3", "ROPE_OutL")], by = "issues")
+issDf1<-longDf1[!duplicated(longDf1$issues),]
+```
+
+## Study 2
+
+```{r}
+all.neg <- function(x) -1*abs(x)
+set.seed(1)
+uids <- unique(longDf2$issues)
+Df2Issues <- longDf2[!duplicated(longDf2$label.x),]
+bNames <- c("issues", "ROPE_low", "ROPE_high", "coefNon", "pdNon", "oneTailNon", "twoTailNon", "CI_l_non", "CI_h_non", "ROPE_Non", "ROPE_NonL", "ROPE_NonH", "BF0_Non", "BFless_Non", "BFgreat_Non", "BFcenter_Non", "coefOut", "pdOut", "oneTailOut", "twoTailOut", "CI_l_out", "CI_h_out", "ROPE_Out", "ROPE_OutL", "ROPE_OutH", "BF0_Out", "BFless_Out", "BFgreat_Out", "BFcenter_Out")
+bayesRepMat <- matrix(nrow=length(uids), ncol=length(bNames))
+k<-0
+for(n in 1:length(uids)){
+  i<-uids[n]
+  subDf2 <- subset(longDf2, issues == i) #subset each P
+  inGroup<-unique(longDf2$bootEvalIn[longDf2$issues==i])
+  inGroup<-inGroup[!is.na(inGroup)]
+  outGroup<-unique(longDf2$bootEvalOut[longDf2$issues==i])
+  outGroup<-outGroup[!is.na(outGroup)]
+  outindiff <- all.neg(unique(longDf2$bootOutIn[longDf2$issues==i])[1])
+  outindiffSD <- unique(longDf2$bootOutInSD[longDf2$issues==i])[1]
+  model <- stan_glm(toInG~RepN, data = subDf2,
+                    refresh=0,
+  prior = normal(outindiff, outindiffSD*10, autoscale = FALSE))
+  posteriors <- describe_posterior(model)
+  BF_0 <-bayesfactor_parameters(model, null = 0)
+  BF_less <-bayesfactor_parameters(model, direction = "<")
+  BF_great <-bayesfactor_parameters(model, direction = ">")
+  BF_center <- bayesfactor_parameters(model, null = c(outindiff/2, -outindiff/2))
+  coefNon <-  posteriors$Median[2]
+  pdNon <-  posteriors$pd[2]
+  oneTailNon <- 1-pdNon
+  twoTailNon <- oneTailNon*2
+  coefOut <-  posteriors$Median[3]
+  pdOut <-  posteriors$pd[3]
+  oneTailOut <- 1-pdOut
+  twoTailOut <- oneTailOut*2
+  CI_l_non <- posteriors$CI_low[2]
+  CI_l_out <- posteriors$CI_low[3]
+  CI_h_non <- posteriors$CI_high[2]
+  CI_h_out <- posteriors$CI_high[3]
+  ROPE_low <- posteriors$ROPE_low[1]
+  ROPE_high <- posteriors$ROPE_high[1]
+  ROPE_Non <- posteriors$ROPE_Percentage[2]
+  ROPE_Out <- posteriors$ROPE_Percentage[3]
+  ROPE_L <- rope(model, range = c(0, Inf))
+  ROPE_H <- rope(model, range = c(-Inf, 0))
+  ROPE_NonH <- ROPE_H$ROPE_Percentage[2]
+  ROPE_OutH <- ROPE_H$ROPE_Percentage[3]
+  ROPE_NonL <- ROPE_L$ROPE_Percentage[2]
+  ROPE_OutL <- ROPE_L$ROPE_Percentage[3]
+  
+ bayesRepMat[n,] <- c(i, ROPE_low, ROPE_high, coefNon, pdNon, oneTailNon, twoTailNon, CI_l_non, CI_h_non, ROPE_Non, ROPE_NonL, ROPE_NonH, exp(BF_0$log_BF[2]), exp(BF_less$log_BF[2]), exp(BF_great$log_BF[2]), exp(BF_center$log_BF[2]), coefOut, pdOut, oneTailOut, twoTailOut, CI_l_out, CI_h_out, ROPE_Out, ROPE_OutL, ROPE_OutH, exp(BF_0$log_BF[3]), exp(BF_less$log_BF[3]), exp(BF_great$log_BF[3]), exp(BF_center$log_BF[3]))
+}
+colnames(bayesRepMat) <- bNames
+bayesRepMat <- as.data.frame(bayesRepMat)
+bayesRepMat$CI_out_sig <- 0
+bayesRepMat$CI_out_sig[sign(bayesRepMat$CI_l_out)==sign(bayesRepMat$CI_h_out)] <- 1
+bayesRepMat$CI_non_sig <- 0
+bayesRepMat$CI_non_sig[sign(bayesRepMat$CI_l_non)==sign(bayesRepMat$CI_h_non)] <- 1
+bayesRepMat$CI_out_range <- bayesRepMat$CI_h_out - bayesRepMat$CI_l_out
+bayesRepMat$CI_non_range <- bayesRepMat$CI_h_non - bayesRepMat$CI_l_non
+
+bayesRepMat2 <- merge(bayesRepMat, issueDf2[c("issues","label.x","reput","honest","reputD")], by="issues")
+bayesRepMat2<-bayesRepMat2[order(-bayesRepMat2$BFless_Out),]
+bayesRepMatS2<-bayesRepMat2
+```
+
+### Percentages for Bayes analyses
+
+```{r}
+paste0("Two tail p's: ", mean(bayesRepMatS2$twoTailOut<.05))
+paste0("One tail p's: ", mean(bayesRepMatS2$oneTailOut<.05))
+paste0("BF greater: ", mean(bayesRepMatS2$BFgreat_Out>1))
+paste0("BF less: ", mean(bayesRepMatS2$BFless_Out>1))
+paste0("BF center: ", mean(bayesRepMatS2$BFcenter_Out>1))
+paste0("BF nonzero: ", mean(bayesRepMatS2$BF0_Out>1))
+```
+
+### Differences in outgroup-conforming vs. ingroup-conforming issues
+
+```{r}
+bayesRepMatS2$foc <- bayesRepMatS2$BFgreat_Out > bayesRepMatS2$BFless_Out
+
+bayesRepMatS2$foc2 <- bayesRepMatS2$ROPE_OutL < .50
+bayesRepMatS2$foc3 <- "Neut"
+bayesRepMatS2$foc3[bayesRepMatS2$ROPE_OutL < .10] <- "toOut"
+bayesRepMatS2$foc3[bayesRepMatS2$ROPE_OutL > .90] <- "toIn"
+
+bayesRepMatS2$label.x[order(bayesRepMatS2$ROPE_OutL)]
+```

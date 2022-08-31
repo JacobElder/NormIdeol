@@ -425,7 +425,6 @@ summ(m_pol_Aff_Info_three_2)
 confint(m_pol_Aff_Info_three_2, method= "Wald")
 ```
 
-
 ## Effect of Surveyor Affiliation
 
 ### Study 1
