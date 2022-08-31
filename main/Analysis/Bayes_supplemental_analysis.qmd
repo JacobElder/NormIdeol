@@ -18,9 +18,9 @@ here::i_am("main/Analysis/Bayes_supplemental_analysis.qmd")
 
 ```{r, include=F}
 #study 1
-longDf1 <- read_parquet(here("main","analysis","output","PFfullDf.parquet"))
-distDf1 <- read_parquet(here("main","analysis","output","distanceDf.parquet"))
-varDf1 <- read_parquet(here("main","analysis","output","varDf1.parquet"))
+longDf1 <- read_parquet(here("main","data","PFfullDf.parquet"))
+distDf1 <- read_parquet(here("main","data","distanceDf.parquet"))
+varDf1 <- read_parquet(here("main","data","varDf1.parquet"))
 longDf1$partyN <- as.factor(longDf1$partyN)
 longDf1$Rep <- as.factor(longDf1$Rep)
 contrasts(longDf1$Rep) <- contr.sum(3)
@@ -38,9 +38,9 @@ issueDf1 <- longDf1[!duplicated(longDf1$issues),]
 distDf1$polStrength <- as.factor(abs(4-distDf1$Polit))
 
 #study 2
-longDf2 <- read_parquet(here("main","analysis","output","PFfullDf2.parquet"))
-distDf2 <- read_parquet(here("main","analysis","output","distanceDf2.parquet"))
-varDf2 <- read_parquet(here("main","analysis","output","varDf2.parquet"))
+longDf2 <- read_parquet(here("main","data","PFfullDf2.parquet"))
+distDf2 <- read_parquet(here("main","data","distanceDf2.parquet"))
+varDf2 <- read_parquet(here("main","data","varDf2.parquet"))
 longDf2$partyN <- as.factor(longDf2$partyN)
 longDf2$Rep <- as.factor(longDf2$Rep)
 longDf2$Rep <- factor(longDf2$Rep, c("Non","Rep","Dem"))
@@ -59,26 +59,23 @@ InfoDf2 <- subset(longDf2, Info == "Info")
 issueDf2 <- longDf2[!duplicated(longDf2$issues),]
 ```
 
-
 # Bayes naming conventions
 
-ROPE_low = lower null range of the default rope that bayes function specifies based on .1 SD around DV (not particularly useful)
-ROPE_high = upper null range of the default rope that bayes function specifies based on .1 SD around DV (not particularly useful)
-ROPE_Non = default ropes around nonpartisan 
+ROPE_low = lower null range of the default rope that bayes function specifies based on .1 SD around DV (not particularly useful) ROPE_high = upper null range of the default rope that bayes function specifies based on .1 SD around DV (not particularly useful) ROPE_Non = default ropes around nonpartisan
 
-ROPEd_Out = d represents directional (is the null on the side of not the outgroup, i.e. the smaller it is the less of the distribution is conforming more to outgroup). Smaller, shifting more towards outgroup. Can look at top 20 and bottom 20. 
+ROPEd_Out = d represents directional (is the null on the side of not the outgroup, i.e. the smaller it is the less of the distribution is conforming more to outgroup). Smaller, shifting more towards outgroup. Can look at top 20 and bottom 20.
 
-coefNon = median of the distrution 
+coefNon = median of the distrution
 
-pdNon = probability of direction (highly correlated with p.value). can look up bayes test r prob of direction. 
+pdNon = probability of direction (highly correlated with p.value). can look up bayes test r prob of direction.
 
 oneTailNon = converting pd to p.values
 
-CI_l_non = lower bound of CI for non effect. credibility interval of the posterior distribution. 
+CI_l\_non = lower bound of CI for non effect. credibility interval of the posterior distribution.
 
-BFtoOut_Non = bayes factors that are defined as directional test 
+BFtoOut_Non = bayes factors that are defined as directional test
 
-conformOut = posterior is less than 50 conforming more to outgroup. 
+conformOut = posterior is less than 50 conforming more to outgroup.
 
 ## Study 1
 

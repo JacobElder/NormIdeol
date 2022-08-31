@@ -17,15 +17,15 @@ library(groundhog)
 pkgs <-  c("corrr","tidyverse","ggplot2","lme4","lmerTest", "ggeffects", "sjPlot", "insight", "data.table", "here", "arrow", "jtools", "r2glmm")
 groundhog.day <- '2022-07-25'
 groundhog.library(pkgs, groundhog.day)
-here::i_am("main/Analysis/reportingResults.Rmd")
+here::i_am("main/Analysis/supplemental_analyses.qmd")
 ```
 
 ```{r, include=F}
 #study 1
-longDf1 <- read_parquet(here("main","analysis","output","PFfullDf.parquet"))
-distDf1 <- read_parquet(here("main","analysis","output","distanceDf.parquet"))
-varDf1 <- read_parquet(here("main","analysis","output","varDf1.parquet"))
-study1_ind <- read.csv(here("main","analysis","output","Study1_indDiff.csv"))
+longDf1 <- read_parquet(here("main","data","PFfullDf.parquet"))
+distDf1 <- read_parquet(here("main","data","distanceDf.parquet"))
+varDf1 <- read_parquet(here("main","data","varDf1.parquet"))
+study1_ind <- read.csv(here("main","data","Study1_indDiff.csv"))
 study1_ind<- study1_ind[,c(2, 4,5,6,7,8,9)]
 longDf1 <- merge(longDf1, study1_ind, by = c("subID"), all.x = T)
 
@@ -48,10 +48,10 @@ longDf1$inDev <- abs(longDf1$eval - longDf1$bootEvalIn)
 longDf1$outDev <- abs(longDf1$eval - longDf1$bootEvalOut)
 
 #study 2
-longDf2 <- read_parquet(here("main","analysis","output","PFfullDf2.parquet"))
-distDf2 <- read_parquet(here("main","analysis","output","distanceDf2.parquet"))
-varDf2 <- read_parquet(here("main","analysis","output","varDf2.parquet"))
-study2_ind <- read.csv(here("main","analysis","output","Study2_indDiff.csv"))
+longDf2 <- read_parquet(here("main","data","PFfullDf2.parquet"))
+distDf2 <- read_parquet(here("main","data","distanceDf2.parquet"))
+varDf2 <- read_parquet(here("main","data","varDf2.parquet"))
+study2_ind <- read.csv(here("main","data","Study2_indDiff.csv"))
 study2_ind<- study2_ind[,c(2:11, 13:15)]
 longDf2 <- merge(longDf2, study2_ind, by = c("subID"), all.x = T)
 
@@ -75,6 +75,8 @@ longDf2$inDev <- abs(longDf2$eval - longDf2$bootEvalIn)
 longDf2$outDev <- abs(longDf2$eval - longDf2$bootEvalOut)
 ```
 
+# unique issues between studies
+
 ```{r, include = F}
 S1Issues <- as.data.frame(unique(longDf1$label))
 S2Issues <-as.data.frame(unique(longDf2$label.y))
@@ -88,9 +90,63 @@ length(unique(unique(all_iss$label)))
 unique <- length(S1Issues[S1Issues$label %in% S2Issues$label,])
 ```
 
-# Ideological Consistency
+# Demographics
+
+```{r}
+#age
+m_age_1 <- describe(longDf1$Age)
+m_age_2 <- describe(longDf2$Age)
+#gender
+gender_1 <- prop.table(table(longDf1$Gender))
+gender_2 <- prop.table(table(longDf2$Gender))
+#race
+longDf1$ethnicity[longDf1$Race == 1] <- "Black"
+longDf1$ethnicity[longDf1$Race == 2] <- "Asian"
+longDf1$ethnicity[longDf1$Race == 3] <- "White"
+longDf1$ethnicity[longDf1$Race == 4] <- "Hispanic"
+longDf1$ethnicity[longDf1$Race == 5] <- "Pacific Islander"
+longDf2$ethnicity[longDf2$Race ==6] <- "Other"
+
+longDf2$ethnicity[longDf2$Race == 1] <- "Black"
+longDf2$ethnicity[longDf2$Race == 2] <- "Asian"
+longDf2$ethnicity[longDf2$Race == 3] <- "White"
+longDf2$ethnicity[longDf2$Race == 4] <- "Hispanic"
+longDf2$ethnicity[longDf2$Race == 5] <- "Pacific Islander"
+longDf2$ethnicity[longDf2$Race ==6] <- "Other"
+race_1 <- prop.table(table(longDf1$ethnicity))
+race_2 <- prop.table(table(longDf2$ethnicity))
+#1 = Black, 2 = Asian, 3 = White, 4 = Hispanic, 5 = Pacific Islander, 6 = Other
+
+#education
+education_1 <- prop.table(table(longDf1$Education))
+education_2 <- prop.table(table(longDf2$Education))
+#political affiliation
+polit_1 <- prop.table(table(longDf1$Polit))
+polit_2 <- prop.table(table(longDf2$Polit))
+
+```
+
+# Ideological Consistency Analyses
 
 ## Coherence: Similarity of Issues Predicting Similarity of Evaluations
+
+### Main effect 
+
+#### Study 1
+
+```{r}
+m_sim_main_1 <- lmer( scale(dist) ~ scale(corr) + ( scale(corr) | subID), data = distDf1, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summ(m_sim_main_1)
+```
+
+#### Study 2
+
+```{r}
+m_sim_main_2 <- lmer( scale(dist) ~ scale(corr) + ( scale(corr) | subID), data = distDf2, control=lmerControl(optimizer="bobyqa",
+                                optCtrl=list(maxfun=2e5)))
+summ(m_sim_main_2)
+```
 
 ### Effect of Group Norm
 
