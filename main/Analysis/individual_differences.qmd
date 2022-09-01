@@ -8,8 +8,6 @@ output:
     df_print: paged
 ---
 
-# Load in packages
-
 ```{r, include=F}
 library(groundhog)
 pkgs <-  c("corrr","tidyverse","ggplot2","lme4","lmerTest", "ggeffects", "sjPlot", "insight", "data.table", "here", "arrow", "jtools", "r2glmm")
@@ -18,13 +16,11 @@ groundhog.library(pkgs, groundhog.day)
 here::i_am("main/Analysis/reportingResults.Rmd")
 ```
 
-# Load in Data
-
 ```{r, include=F}
 #study 1
-longDf1 <- read_parquet(here("main","analysis","output","PFfullDf.parquet"))
-distDf1 <- read_parquet(here("main","analysis","output","distanceDf.parquet"))
-varDf1 <- read_parquet(here("main","analysis","output","varDf1.parquet"))
+longDf1 <- read_parquet(here("main","data","PFfullDf.parquet"))
+distDf1 <- read_parquet(here("main","data","distanceDf.parquet"))
+varDf1 <- read_parquet(here("main","data","varDf1.parquet"))
 longDf1$partyN <- as.factor(longDf1$partyN)
 longDf1$Rep <- as.factor(longDf1$Rep)
 contrasts(longDf1$Rep) <- contr.sum(3)
@@ -42,9 +38,9 @@ issueDf1 <- longDf1[!duplicated(longDf1$issues),]
 distDf1$polStrength <- as.factor(abs(4-distDf1$Polit))
 
 #study 2
-longDf2 <- read_parquet(here("main","analysis","output","PFfullDf2.parquet"))
-distDf2 <- read_parquet(here("main","analysis","output","distanceDf2.parquet"))
-varDf2 <- read_parquet(here("main","analysis","output","varDf2.parquet"))
+longDf2 <- read_parquet(here("main","data","PFfullDf2.parquet"))
+distDf2 <- read_parquet(here("main","data","distanceDf2.parquet"))
+varDf2 <- read_parquet(here("main","data","varDf2.parquet"))
 longDf2$partyN <- as.factor(longDf2$partyN)
 longDf2$Rep <- as.factor(longDf2$Rep)
 longDf2$Rep <- factor(longDf2$Rep, c("Non","Rep","Dem"))
@@ -82,7 +78,7 @@ ggpredict(m1, c("corr", "Trump")) %>% plot()
 ggpredict(m2, c("corr", "Trump")) %>% plot()
 ```
 
-*Trump Voters are more incoherent*
+## Willingness to self-censor
 
 ```{r}
 m1 <- lmer( scale(dist) ~ scale(corr) * scale(WSC) + ( scale(corr) | subID), data = distDf1, control=lmerControl(optimizer="bobyqa",
@@ -96,6 +92,8 @@ ggpredict(m, c("corr", "WSC")) %>% plot()
 ggpredict(m, c("corr", "WSC")) %>% plot()
 ```
 
+## Marten-Larsen approval motivation
+
 ```{r}
 m1 <- lmer( scale(dist) ~ scale(corr) * scale(MLAM) + ( scale(corr) | subID), data = distDf1, control=lmerControl(optimizer="bobyqa",
                                 optCtrl=list(maxfun=2e5)))
@@ -106,6 +104,8 @@ summ(m)
 ggpredict(m, c("corr", "MLAM")) %>% plot()
 ggpredict(m, c("corr", "MLAM")) %>% plot()
 ```
+
+## Need for Cognition
 
 ```{r}
 m1 <- lmer( scale(dist) ~ scale(corr) * scale(NFC) + ( scale(corr) | subID), data = distDf1, control=lmerControl(optimizer="bobyqa",
@@ -118,6 +118,8 @@ ggpredict(m, c("corr", "NFC")) %>% plot()
 ggpredict(m, c("corr", "NFC")) %>% plot()
 ```
 
+## Self-group overlap (we/them)
+
 ```{r}
 m1 <- lmer( scale(dist) ~ scale(corr) * scale(SGO.wt) + ( scale(corr) | subID), data = distDf1, control=lmerControl(optimizer="bobyqa",
                                 optCtrl=list(maxfun=2e5)))
@@ -128,6 +130,8 @@ summ(m)
 ggpredict(m, c("corr", "SGO.wt")) %>% plot()
 ggpredict(m, c("corr", "SGO.wt")) %>% plot()
 ```
+
+## Self-group overlap (self/them)
 
 ```{r}
 m1 <- lmer( scale(dist) ~ scale(corr) * scale(SGO.st) + ( scale(corr) | subID), data = distDf1, control=lmerControl(optimizer="bobyqa",
