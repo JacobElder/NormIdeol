@@ -4,6 +4,13 @@ output: html_notebook
 ---
 
 ```{r}
+library(tidyverse)
+library(here)
+here::i_am("main/Cleaning/convertParquet.Rmd")
+```
+
+
+```{r}
 dir.create("~/Documents/GitHub/Preference-Falsification/main/Analysis/output/")
 ```
 
@@ -18,9 +25,15 @@ varDf1 <- data.table::fread("./output/varDf1.csv")
 ```
 
 ```{r}
-arrow::write_parquet(longDf1, "~/Documents/GitHub/Preference-Falsification/main/Analysis/output/PFfullDf.parquet")
-arrow::write_parquet(distDf1, "~/Documents/GitHub/Preference-Falsification/main/Analysis/output/distanceDf.parquet")
-arrow::write_parquet(varDf1, "~/Documents/GitHub/Preference-Falsification/main/Analysis/output/varDf1.parquet")
+longDf1 <- longDf1 %>% select(issues,subID,Info,Rep,eval,Polit,Party,SES:Status, Extra:SGO.sw, CSEpriv:Therm_2, inTherm, outTherm, affPol, label,Republican.Approval, Democrat.Approval, inApp, outApp, partyN, RepN, Trump, looEvalIn, looEvalOut, bootEvalIn, bootEvalOut, bootInOut, toInG)
+distDf1 <- distDf1 %>% select(subID, dist, RepN, partyN, Info, Rep, corr, affPol:CSEid, Polit:polStrength)
+```
+
+
+```{r}
+arrow::write_parquet(longDf1, here("main","data","PFfullDf.parquet"))
+arrow::write_parquet(distDf1, here("main","data","distanceDf.parquet"))
+arrow::write_parquet(varDf1, here("main","data","varDf1.parquet"))
 ```
 
 # Convert Study 2 to Parquet
@@ -33,9 +46,16 @@ varDf2 <- data.table::fread("./output/varDf2.csv")
 ```
 
 ```{r}
-arrow::write_parquet(longDf2, "~/Documents/GitHub/Preference-Falsification/main/Analysis/output/PFfullDf2.parquet")
-arrow::write_parquet(distDf2, "~/Documents/GitHub/Preference-Falsification/main/Analysis/output/distanceDf2.parquet")
-arrow::write_parquet(varDf2, "~/Documents/GitHub/Preference-Falsification/main/Analysis/output/varDf2.parquet")
+longDf2 <- longDf2 %>% select(issues,subID,Info,Rep,eval,Polit,Party,Extra:SGO.sw, CSEpriv:Therm_2, inTherm, outTherm, affPol, label.x,Republican.Approval, Democrat.Approval, inApp, outApp, partyN, RepN, Trump, looEvalIn, looEvalOut, bootEvalIn, bootEvalOut, bootInOut, toInG)
+
+distDf2 <- distDf2 %>% select(subID, dist, RepN, partyN, Info, Rep, corr, affPol:CSEid, Polit.x:polStrength)
+```
+
+
+```{r}
+arrow::write_parquet(longDf2, here("main","data","PFfullDf2.parquet"))
+arrow::write_parquet(distDf2, here("main","data","distanceDf2.parquet"))
+arrow::write_parquet(varDf2, here("main","data","varDf2.parquet"))
 ```
 
 ```{r}

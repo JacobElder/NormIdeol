@@ -1,6 +1,8 @@
 ---
 title: "R Notebook"
-output: html_notebook
+output:
+  html_document:
+    df_print: paged
 ---
 
 ```{r}
@@ -8,7 +10,7 @@ library(groundhog)
 pkgs <-  c("corrr","tidyverse","lme4","lmerTest", "ggeffects", "sjPlot", "insight", "data.table", "here", "arrow", "ggpubr", "wesanderson")
 groundhog.day <- '2022-07-25'
 groundhog.library(pkgs, groundhog.day)
-here::i_am("main/Analysis/reportingResults.Rmd")
+here::i_am("main/Analysis/publicationPlots.Rmd")
 ```
 
 ```{r}
@@ -22,10 +24,10 @@ objectName <- function(input) {
 
 ```{r}
 #study 1
-longDf1 <- read_parquet(here("main","analysis","output","PFfullDf.parquet"))
-distDf1 <- read_parquet(here("main","analysis","output","distanceDf.parquet"))
-varDf1 <- read_parquet(here("main","analysis","output","varDf1.parquet"))
-study1_ind <- read.csv(here("main","analysis","output","Study1_indDiff.csv"))
+longDf1 <- read_parquet(here("main","data","PFfullDf.parquet"))
+distDf1 <- read_parquet(here("main","data","distanceDf.parquet"))
+varDf1 <- read_parquet(here("main","data","varDf1.parquet"))
+study1_ind <- read.csv(here("main","data","Study1_indDiff.csv"))
 study1_ind<- study1_ind[,c(2, 4,5,6,7,8,9)]
 
 longDf1 <- merge(longDf1, study1_ind, by = c("subID"), all.x = T)
@@ -49,10 +51,10 @@ distDf1$polStrength <- as.factor(abs(4-distDf1$Polit))
 
 ```{r}
 #study 2
-longDf2 <- read_parquet(here("main","analysis","output","PFfullDf2.parquet"))
-distDf2 <- read_parquet(here("main","analysis","output","distanceDf2.parquet"))
-varDf2 <- read_parquet(here("main","analysis","output","varDf2.parquet"))
-study2_ind <- read.csv(here("main","analysis","output","Study2_indDiff.csv"))
+longDf2 <- read_parquet(here("main","data","PFfullDf2.parquet"))
+distDf2 <- read_parquet(here("main","data","distanceDf2.parquet"))
+varDf2 <- read_parquet(here("main","data","varDf2.parquet"))
+study2_ind <- read.csv(here("main","data","Study2_indDiff.csv"))
 study2_ind<- study2_ind[,c(2:11, 13:15)]
 longDf2 <- merge(longDf2, study2_ind, by = c("subID"), all.x = T)
 
@@ -104,6 +106,13 @@ panel.background = element_blank(), axis.line = element_line(colour = "black")) 
 Sim.Info.S1
 ```
 
+### Raw data
+
+```{r}
+ggpredict(m, c("corr","Info"))%>% plot(add.data=T) + labs(title="Raw Data",x="Issue Similarity",y="Evaluation Similarity")
+```
+
+
 ## Study 2
 
 ```{r}
@@ -125,6 +134,10 @@ Sim.Info.S2 <-ggplot(p, aes(x, predicted)) +  geom_line(aes(linetype=group, colo
 panel.background = element_blank(), axis.line = element_line(colour = "black")) +
   xlab("Issue Similarity") + ylab("Rating Dissimilarity") + scale_x_continuous(breaks=seq(-1,1,1))
 Sim.Info.S2
+```
+
+```{r}
+ggpredict(m, c("corr","Info"))%>% plot(add.data=T) + labs(title="Raw Data",x="Issue Similarity",y="Evaluation Similarity")
 ```
 
 ```{r}
@@ -160,6 +173,10 @@ panel.background = element_blank(), axis.line = element_line(colour = "black")) 
 Sim.AffPol.S1
 ```
 
+```{r}
+ggpredict(m, c("corr","affPol"))%>% plot(add.data=T) + labs(title="Raw Data",x="Issue Similarity",y="Evaluation Similarity")
+```
+
 ## Study 2
 
 ```{r}
@@ -181,6 +198,10 @@ Sim.AffPol.S2 <-ggplot(p, aes(x, predicted)) +  geom_line(aes(linetype=group, co
 panel.background = element_blank(), axis.line = element_line(colour = "black")) +
   xlab("Issue Similarity") + ylab("Rating Dissimilarity")  + scale_x_continuous(breaks=seq(-1,1,1))
 Sim.AffPol.S2
+```
+
+```{r}
+ggpredict(m, c("corr","affPol"))%>% plot(add.data=T) + labs(title="Raw Data",x="Issue Similarity",y="Evaluation Similarity")
 ```
 
 ```{r}
@@ -224,6 +245,10 @@ panel.background = element_blank(), axis.line = element_line(colour = "black")) 
 Norm.Info.S1
 ```
 
+```{r}
+ggpredict(m, c("inMinOut","Info"))%>% plot(add.data=T) + labs(title="Raw Data",x="Inter-Party Favorability",y="Evaluation")
+```
+
 ### Study 2
 
 ```{r}
@@ -245,6 +270,10 @@ Norm.Info.S2 <-ggplot(p, aes(x, predicted)) +  geom_line(aes(linetype=group, col
 panel.background = element_blank(), axis.line = element_line(colour = "black")) +
   xlab("Issue Similarity") + ylab("Rating Dissimilarity")  + scale_x_continuous(breaks=seq(-1,1,1))
 Norm.Info.S2
+```
+
+```{r}
+ggpredict(m, c("inMinOut","Info"))%>% plot(add.data=T) + labs(title="Raw Data",x="Inter-Party Favorability",y="Evaluation")
 ```
 
 ### Combined
@@ -281,6 +310,11 @@ panel.background = element_blank(), axis.line = element_line(colour = "black")) 
 Norm.affPol.S1
 ```
 
+
+```{r}
+ggpredict(m, c("inMinOut","affPol"))%>% plot(add.data=T) + labs(title="Raw Data",x="Inter-Party Favorability",y="Evaluation")
+```
+
 ### Study 2
 
 ```{r}
@@ -302,6 +336,11 @@ Norm.affPol.S2 <-ggplot(p, aes(x, predicted)) +  geom_line(aes(linetype=group, c
 panel.background = element_blank(), axis.line = element_line(colour = "black")) +
   xlab("Inter-Party Favorability") + ylab("Approval Rating")  + scale_x_continuous(breaks=seq(-1,1,1)) 
 Norm.affPol.S2
+```
+
+
+```{r}
+ggpredict(m, c("inMinOut","affPol"))%>% plot(add.data=T) + labs(title="Raw Data",x="Inter-Party Favorability",y="Evaluation")
 ```
 
 ### Combined

@@ -1770,11 +1770,22 @@ pre code {
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuaGVyZTo6aV9hbShcIm1haW4vQ2xlYW5pbmcvY29udmVydFBhcnF1ZXQuUm1kXCIpXG5cbmBgYCJ9 -->
+<pre class="r"><code>here::i_am(&quot;main/Cleaning/convertParquet.Rmd&quot;)
+</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiaGVyZSgpIHN0YXJ0cyBhdCAvVXNlcnMvamFjb2JlbGRlci9Eb2N1bWVudHMvR2l0SHViL05vcm1JZGVvbFxuIn0= -->
+<pre><code>here() starts at /Users/jacobelder/Documents/GitHub/NormIdeol</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
 <!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZGlyLmNyZWF0ZShcIn4vRG9jdW1lbnRzL0dpdEh1Yi9QcmVmZXJlbmNlLUZhbHNpZmljYXRpb24vbWFpbi9BbmFseXNpcy9vdXRwdXQvXCIpXG5gYGAifQ== -->
 <pre class="r"><code>dir.create(&quot;~/Documents/GitHub/Preference-Falsification/main/Analysis/output/&quot;)</code></pre>
 <!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZzogJy9Vc2Vycy9qYWNvYmVsZGVyL0RvY3VtZW50cy9HaXRIdWIvUHJlZmVyZW5jZS1GYWxzaWZpY2F0aW9uL21haW4vQW5hbHlzaXMvb3V0cHV0JyBhbHJlYWR5IGV4aXN0c1xuIn0= -->
-<pre><code>Warning: &#39;/Users/jacobelder/Documents/GitHub/Preference-Falsification/main/Analysis/output&#39; already exists</code></pre>
+<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZzogY2Fubm90IGNyZWF0ZSBkaXIgJy9Vc2Vycy9qYWNvYmVsZGVyL0RvY3VtZW50cy9HaXRIdWIvUHJlZmVyZW5jZS1GYWxzaWZpY2F0aW9uL21haW4vQW5hbHlzaXMvb3V0cHV0JywgcmVhc29uICdObyBzdWNoIGZpbGUgb3IgZGlyZWN0b3J5J1xuIn0= -->
+<pre><code>Warning: cannot create dir &#39;/Users/jacobelder/Documents/GitHub/Preference-Falsification/main/Analysis/output&#39;, reason &#39;No such file or directory&#39;</code></pre>
 <!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
@@ -1803,10 +1814,18 @@ distDf1 &lt;- data.table::fread(&quot;./output/distanceDf.csv&quot;)</code></pre
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYXJyb3c6OndyaXRlX3BhcnF1ZXQobG9uZ0RmMSwgXCJ+L0RvY3VtZW50cy9HaXRIdWIvUHJlZmVyZW5jZS1GYWxzaWZpY2F0aW9uL21haW4vQW5hbHlzaXMvb3V0cHV0L1BGZnVsbERmLnBhcnF1ZXRcIilcbmFycm93Ojp3cml0ZV9wYXJxdWV0KGRpc3REZjEsIFwifi9Eb2N1bWVudHMvR2l0SHViL1ByZWZlcmVuY2UtRmFsc2lmaWNhdGlvbi9tYWluL0FuYWx5c2lzL291dHB1dC9kaXN0YW5jZURmLnBhcnF1ZXRcIilcbmFycm93Ojp3cml0ZV9wYXJxdWV0KHZhckRmMSwgXCJ+L0RvY3VtZW50cy9HaXRIdWIvUHJlZmVyZW5jZS1GYWxzaWZpY2F0aW9uL21haW4vQW5hbHlzaXMvb3V0cHV0L3ZhckRmMS5wYXJxdWV0XCIpXG5gYGAifQ== -->
-<pre class="r"><code>arrow::write_parquet(longDf1, &quot;~/Documents/GitHub/Preference-Falsification/main/Analysis/output/PFfullDf.parquet&quot;)
-arrow::write_parquet(distDf1, &quot;~/Documents/GitHub/Preference-Falsification/main/Analysis/output/distanceDf.parquet&quot;)
-arrow::write_parquet(varDf1, &quot;~/Documents/GitHub/Preference-Falsification/main/Analysis/output/varDf1.parquet&quot;)</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubG9uZ0RmMSA8LSBsb25nRGYxICU+JSBzZWxlY3QoaXNzdWVzLHN1YklELEluZm8sUmVwLGV2YWwsUG9saXQsUGFydHksU0VTOlN0YXR1cywgRXh0cmE6U0dPLnN3LCBDU0Vwcml2OlRoZXJtXzIsIGluVGhlcm0sIG91dFRoZXJtLCBhZmZQb2wsIGxhYmVsLFJlcHVibGljYW4uQXBwcm92YWwsIERlbW9jcmF0LkFwcHJvdmFsLCBpbkFwcCwgb3V0QXBwLCBwYXJ0eU4sIFJlcE4sIFRydW1wLCBsb29FdmFsSW4sIGxvb0V2YWxPdXQsIGJvb3RFdmFsSW4sIGJvb3RFdmFsT3V0LCBib290SW5PdXQsIHRvSW5HKVxuZGlzdERmMSA8LSBkaXN0RGYxICU+JSBzZWxlY3Qoc3ViSUQsIGRpc3QsIFJlcE4sIHBhcnR5TiwgSW5mbywgUmVwLCBjb3JyLCBhZmZQb2w6Q1NFaWQsIFBvbGl0OnBvbFN0cmVuZ3RoKVxuYGBgIn0= -->
+<pre class="r"><code>longDf1 &lt;- longDf1 %&gt;% select(issues,subID,Info,Rep,eval,Polit,Party,SES:Status, Extra:SGO.sw, CSEpriv:Therm_2, inTherm, outTherm, affPol, label,Republican.Approval, Democrat.Approval, inApp, outApp, partyN, RepN, Trump, looEvalIn, looEvalOut, bootEvalIn, bootEvalOut, bootInOut, toInG)
+distDf1 &lt;- distDf1 %&gt;% select(subID, dist, RepN, partyN, Info, Rep, corr, affPol:CSEid, Polit:polStrength)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYXJyb3c6OndyaXRlX3BhcnF1ZXQobG9uZ0RmMSwgaGVyZShcIm1haW5cIixcImRhdGFcIixcIlBGZnVsbERmLnBhcnF1ZXRcIikpXG5hcnJvdzo6d3JpdGVfcGFycXVldChkaXN0RGYxLCBoZXJlKFwibWFpblwiLFwiZGF0YVwiLFwiZGlzdGFuY2VEZi5wYXJxdWV0XCIpKVxuYXJyb3c6OndyaXRlX3BhcnF1ZXQodmFyRGYxLCBoZXJlKFwibWFpblwiLFwiZGF0YVwiLFwidmFyRGYxLnBhcnF1ZXRcIikpXG5gYGAifQ== -->
+<pre class="r"><code>arrow::write_parquet(longDf1, here(&quot;main&quot;,&quot;data&quot;,&quot;PFfullDf.parquet&quot;))
+arrow::write_parquet(distDf1, here(&quot;main&quot;,&quot;data&quot;,&quot;distanceDf.parquet&quot;))
+arrow::write_parquet(varDf1, here(&quot;main&quot;,&quot;data&quot;,&quot;varDf1.parquet&quot;))</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
@@ -1836,37 +1855,69 @@ distDf2 &lt;- data.table::fread(&quot;./output/distanceDf2.csv&quot;)</code></pr
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYXJyb3c6OndyaXRlX3BhcnF1ZXQobG9uZ0RmMiwgXCJ+L0RvY3VtZW50cy9HaXRIdWIvUHJlZmVyZW5jZS1GYWxzaWZpY2F0aW9uL21haW4vQW5hbHlzaXMvb3V0cHV0L1BGZnVsbERmMi5wYXJxdWV0XCIpXG5hcnJvdzo6d3JpdGVfcGFycXVldChkaXN0RGYyLCBcIn4vRG9jdW1lbnRzL0dpdEh1Yi9QcmVmZXJlbmNlLUZhbHNpZmljYXRpb24vbWFpbi9BbmFseXNpcy9vdXRwdXQvZGlzdGFuY2VEZjIucGFycXVldFwiKVxuYXJyb3c6OndyaXRlX3BhcnF1ZXQodmFyRGYyLCBcIn4vRG9jdW1lbnRzL0dpdEh1Yi9QcmVmZXJlbmNlLUZhbHNpZmljYXRpb24vbWFpbi9BbmFseXNpcy9vdXRwdXQvdmFyRGYyLnBhcnF1ZXRcIilcbmBgYCJ9 -->
-<pre class="r"><code>arrow::write_parquet(longDf2, &quot;~/Documents/GitHub/Preference-Falsification/main/Analysis/output/PFfullDf2.parquet&quot;)
-arrow::write_parquet(distDf2, &quot;~/Documents/GitHub/Preference-Falsification/main/Analysis/output/distanceDf2.parquet&quot;)
-arrow::write_parquet(varDf2, &quot;~/Documents/GitHub/Preference-Falsification/main/Analysis/output/varDf2.parquet&quot;)</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuY29sbmFtZXMoZGlzdERmMilcblxuYGBgIn0= -->
+<pre class="r"><code>colnames(distDf2)
+</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiIFsxXSBcIlYxXCIgICAgICAgICAgXCJzdWJJRFwiICAgICAgIFwiZGlzdFwiICAgICAgICBcIlJlcE5cIiAgICAgICAgXCJwYXJ0eU5cIiAgICAgIFwiSW5mb1wiICAgICAgICBcIlJlcFwiICAgICAgICBcbiBbOF0gXCJjb3JyXCIgICAgICAgIFwiZGlzdFNUcmFuc1wiICBcImRpc3RFVHJhbnNcIiAgXCJhZmZQb2xcIiAgICAgIFwiRXh0cmFcIiAgICAgICBcIk5ldXJcIiAgICAgICAgXCJNTEFNXCIgICAgICAgXG5bMTVdIFwiU0NTLnB1YlwiICAgICBcIlNDUy5wcml2XCIgICAgXCJTQ1Muc2FcIiAgICAgIFwiV1NDXCIgICAgICAgICBcIk5GQ1wiICAgICAgICAgXCJTR08ud3RcIiAgICAgIFwiU0dPLnN0XCIgICAgIFxuWzIyXSBcIlNHTy5zd1wiICAgICAgXCJDU0Vwcml2XCIgICAgIFwiQ1NFcHViXCIgICAgICBcIkNTRWlkXCIgICAgICAgXCJmYWxzaWZ5XCIgICAgIFwiUG9saXQueFwiICAgICBcInBvbFN0cmVuZ3RoXCJcbiJ9 -->
+<pre><code> [1] &quot;V1&quot;          &quot;subID&quot;       &quot;dist&quot;        &quot;RepN&quot;        &quot;partyN&quot;      &quot;Info&quot;        &quot;Rep&quot;        
+ [8] &quot;corr&quot;        &quot;distSTrans&quot;  &quot;distETrans&quot;  &quot;affPol&quot;      &quot;Extra&quot;       &quot;Neur&quot;        &quot;MLAM&quot;       
+[15] &quot;SCS.pub&quot;     &quot;SCS.priv&quot;    &quot;SCS.sa&quot;      &quot;WSC&quot;         &quot;NFC&quot;         &quot;SGO.wt&quot;      &quot;SGO.st&quot;     
+[22] &quot;SGO.sw&quot;      &quot;CSEpriv&quot;     &quot;CSEpub&quot;      &quot;CSEid&quot;       &quot;falsify&quot;     &quot;Polit.x&quot;     &quot;polStrength&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYXJyb3c6OndyaXRlX3BhcnF1ZXQobG9uZ0RmMiwgaGVyZShcIm1haW5cIixcImRhdGFcIixcIlBGZnVsbERmMi5wYXJxdWV0XCIpKVxuYXJyb3c6OndyaXRlX3BhcnF1ZXQoZGlzdERmMiwgaGVyZShcIm1haW5cIixcImRhdGFcIixcImRpc3RhbmNlRGYyLnBhcnF1ZXRcIikpXG5hcnJvdzo6d3JpdGVfcGFycXVldCh2YXJEZjIsIGhlcmUoXCJtYWluXCIsXCJkYXRhXCIsXCJ2YXJEZjIucGFycXVldFwiKSlcbmBgYCJ9 -->
+<pre class="r"><code>arrow::write_parquet(longDf2, here(&quot;main&quot;,&quot;data&quot;,&quot;PFfullDf2.parquet&quot;))
+arrow::write_parquet(distDf2, here(&quot;main&quot;,&quot;data&quot;,&quot;distanceDf2.parquet&quot;))
+arrow::write_parquet(varDf2, here(&quot;main&quot;,&quot;data&quot;,&quot;varDf2.parquet&quot;))</code></pre>
 <!-- rnb-source-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 <!-- rnb-chunk-begin -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShtaWNyb2JlbmNobWFyaylcbnNldHdkKFwifi9Hb29nbGUgRHJpdmUvVm9sdW1lcy9SZXNlYXJjaCBQcm9qZWN0L1ByZWZlcmVuY2UgRmFsc2lmaWNhdGlvbi9TdHVkeSAyIEFuYWx5c2lzL1wiKVxuYGBgIn0= -->
-<pre class="r"><code>library(microbenchmark)
-setwd(&quot;~/Google Drive/Volumes/Research Project/Preference Falsification/Study 2 Analysis/&quot;)</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZzogVGhlIHdvcmtpbmcgZGlyZWN0b3J5IHdhcyBjaGFuZ2VkIHRvIC9Wb2x1bWVzL0dvb2dsZURyaXZlL015IERyaXZlL1ZvbHVtZXMvUmVzZWFyY2ggUHJvamVjdC9QcmVmZXJlbmNlIEZhbHNpZmljYXRpb24vU3R1ZHkgMiBBbmFseXNpcyBpbnNpZGUgYSBub3RlYm9vayBjaHVuay4gVGhlIHdvcmtpbmcgZGlyZWN0b3J5IHdpbGwgYmUgcmVzZXQgd2hlbiB0aGUgY2h1bmsgaXMgZmluaXNoZWQgcnVubmluZy4gVXNlIHRoZSBrbml0ciByb290LmRpciBvcHRpb24gaW4gdGhlIHNldHVwIGNodW5rIHRvIGNoYW5nZSB0aGUgd29ya2luZyBkaXJlY3RvcnkgZm9yIG5vdGVib29rIGNodW5rcy5cbiJ9 -->
-<pre><code>Warning: The working directory was changed to /Volumes/GoogleDrive/My Drive/Volumes/Research Project/Preference Falsification/Study 2 Analysis inside a notebook chunk. The working directory will be reset when the chunk is finished running. Use the knitr root.dir option in the setup chunk to change the working directory for notebook chunks.</code></pre>
-<!-- rnb-output-end -->
-<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubWljcm9iZW5jaG1hcmsocmVhZC5jc3YgPSByZWFkLmNzdihcIi4vb3V0cHV0L1BGZnVsbERmMi5jc3ZcIiksXG4gICAgICAgICAgICAgICBmcmVhZCA9IGRhdGEudGFibGU6OmZyZWFkKFwiLi9vdXRwdXQvUEZmdWxsRGYyLmNzdlwiKSxcbiAgICAgICAgICAgICAgIHJlYWRfcGFycXVldCA9IGFycm93OjpyZWFkX3BhcnF1ZXQoXCJ+L0RvY3VtZW50cy9HaXRIdWIvUHJlZmVyZW5jZS1GYWxzaWZpY2F0aW9uL21haW4vQW5hbHlzaXMvb3V0cHV0L1BGZnVsbERmMi5wYXJxdWV0XCIpKVxuYGBgIn0= -->
-<pre class="r"><code>microbenchmark(read.csv = read.csv(&quot;./output/PFfullDf2.csv&quot;),
-               fread = data.table::fread(&quot;./output/PFfullDf2.csv&quot;),
-               read_parquet = arrow::read_parquet(&quot;~/Documents/GitHub/Preference-Falsification/main/Analysis/output/PFfullDf2.parquet&quot;))</code></pre>
-<!-- rnb-source-end -->
-<!-- rnb-output-begin eyJkYXRhIjoifC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tfFxufD09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09fFxuIn0= -->
-<pre><code>|--------------------------------------------------|
-|==================================================|</code></pre>
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYGBgclxubGlicmFyeShtaWNyb2JlbmNobWFyaylcbnNldHdkKFxcfi9Hb29nbGUgRHJpdmUvVm9sdW1lcy9SZXNlYXJjaCBQcm9qZWN0L1ByZWZlcmVuY2UgRmFsc2lmaWNhdGlvbi9TdHVkeSAyIEFuYWx5c2lzL1xcKVxuYGBgXG5gYGAifQ== -->
+<pre class="r"><code>```r
+library(microbenchmark)
+setwd(\~/Google Drive/Volumes/Research Project/Preference Falsification/Study 2 Analysis/\)</code></pre>
+<pre><code>
+&lt;!-- rnb-source-end --&gt;
+
+&lt;!-- rnb-output-begin eyJkYXRhIjoiV2FybmluZzogVGhlIHdvcmtpbmcgZGlyZWN0b3J5IHdhcyBjaGFuZ2VkIHRvIC9Wb2x1bWVzL0dvb2dsZURyaXZlL015IERyaXZlL1ZvbHVtZXMvUmVzZWFyY2ggUHJvamVjdC9QcmVmZXJlbmNlIEZhbHNpZmljYXRpb24vU3R1ZHkgMiBBbmFseXNpcyBpbnNpZGUgYSBub3RlYm9vayBjaHVuay4gVGhlIHdvcmtpbmcgZGlyZWN0b3J5IHdpbGwgYmUgcmVzZXQgd2hlbiB0aGUgY2h1bmsgaXMgZmluaXNoZWQgcnVubmluZy4gVXNlIHRoZSBrbml0ciByb290LmRpciBvcHRpb24gaW4gdGhlIHNldHVwIGNodW5rIHRvIGNoYW5nZSB0aGUgd29ya2luZyBkaXJlY3RvcnkgZm9yIG5vdGVib29rIGNodW5rcy5cbiJ9 --&gt;
+</code></pre>
+<p>Warning: The working directory was changed to /Volumes/GoogleDrive/My
+Drive/Volumes/Research Project/Preference Falsification/Study 2 Analysis
+inside a notebook chunk. The working directory will be reset when the
+chunk is finished running. Use the knitr root.dir option in the setup
+chunk to change the working directory for notebook chunks.</p>
+<pre><code>
+
+
+&lt;!-- rnb-output-end --&gt;
+
+&lt;!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuYGBgclxubWljcm9iZW5jaG1hcmsocmVhZC5jc3YgPSByZWFkLmNzdihcXC4vb3V0cHV0L1BGZnVsbERmMi5jc3ZcXCksXG4gICAgICAgICAgICAgICBmcmVhZCA9IGRhdGEudGFibGU6OmZyZWFkKFxcLi9vdXRwdXQvUEZmdWxsRGYyLmNzdlxcKSxcbiAgICAgICAgICAgICAgIHJlYWRfcGFycXVldCA9IGFycm93OjpyZWFkX3BhcnF1ZXQoXFx+L0RvY3VtZW50cy9HaXRIdWIvUHJlZmVyZW5jZS1GYWxzaWZpY2F0aW9uL21haW4vQW5hbHlzaXMvb3V0cHV0L1BGZnVsbERmMi5wYXJxdWV0XFwpKVxuYGBgXG5gYGAifQ== --&gt;
+
+```r
+```r
+microbenchmark(read.csv = read.csv(\./output/PFfullDf2.csv\),
+               fread = data.table::fread(\./output/PFfullDf2.csv\),
+               read_parquet = arrow::read_parquet(\~/Documents/GitHub/Preference-Falsification/main/Analysis/output/PFfullDf2.parquet\))</code></pre>
+<pre><code>
+&lt;!-- rnb-source-end --&gt;
+
+&lt;!-- rnb-output-begin eyJkYXRhIjoifC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tfFxufD09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09fFxuIn0= --&gt;
+</code></pre>
+<p>|————————————————–|
+|==================================================| ```</p>
 <!-- rnb-output-end -->
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <!-- rnb-text-end -->
 </div>
 
-<div id="rmd-source-code">LS0tCnRpdGxlOiAiUiBOb3RlYm9vayIKb3V0cHV0OiBodG1sX25vdGVib29rCi0tLQoKYGBge3J9CmRpci5jcmVhdGUoIn4vRG9jdW1lbnRzL0dpdEh1Yi9QcmVmZXJlbmNlLUZhbHNpZmljYXRpb24vbWFpbi9BbmFseXNpcy9vdXRwdXQvIikKYGBgCgoKIyBDb252ZXJ0IFN0dWR5IDEgdG8gUGFycXVldAoKYGBge3J9CnNldHdkKCJ+L0dvb2dsZSBEcml2ZS9Wb2x1bWVzL1Jlc2VhcmNoIFByb2plY3QvUHJlZmVyZW5jZSBGYWxzaWZpY2F0aW9uL0FuYWx5c2lzLyIpCmxvbmdEZjEgPC0gZGF0YS50YWJsZTo6ZnJlYWQoIi4vb3V0cHV0L1BGZnVsbERmLmNzdiIpCmRpc3REZjEgPC0gZGF0YS50YWJsZTo6ZnJlYWQoIi4vb3V0cHV0L2Rpc3RhbmNlRGYuY3N2IikKdmFyRGYxIDwtIGRhdGEudGFibGU6OmZyZWFkKCIuL291dHB1dC92YXJEZjEuY3N2IikKYGBgCgpgYGB7cn0KYXJyb3c6OndyaXRlX3BhcnF1ZXQobG9uZ0RmMSwgIn4vRG9jdW1lbnRzL0dpdEh1Yi9QcmVmZXJlbmNlLUZhbHNpZmljYXRpb24vbWFpbi9BbmFseXNpcy9vdXRwdXQvUEZmdWxsRGYucGFycXVldCIpCmFycm93Ojp3cml0ZV9wYXJxdWV0KGRpc3REZjEsICJ+L0RvY3VtZW50cy9HaXRIdWIvUHJlZmVyZW5jZS1GYWxzaWZpY2F0aW9uL21haW4vQW5hbHlzaXMvb3V0cHV0L2Rpc3RhbmNlRGYucGFycXVldCIpCmFycm93Ojp3cml0ZV9wYXJxdWV0KHZhckRmMSwgIn4vRG9jdW1lbnRzL0dpdEh1Yi9QcmVmZXJlbmNlLUZhbHNpZmljYXRpb24vbWFpbi9BbmFseXNpcy9vdXRwdXQvdmFyRGYxLnBhcnF1ZXQiKQpgYGAKCiMgQ29udmVydCBTdHVkeSAyIHRvIFBhcnF1ZXQKCmBgYHtyfQpzZXR3ZCgifi9Hb29nbGUgRHJpdmUvVm9sdW1lcy9SZXNlYXJjaCBQcm9qZWN0L1ByZWZlcmVuY2UgRmFsc2lmaWNhdGlvbi9TdHVkeSAyIEFuYWx5c2lzLyIpCmxvbmdEZjIgPC0gZGF0YS50YWJsZTo6ZnJlYWQoIi4vb3V0cHV0L1BGZnVsbERmMi5jc3YiKQpkaXN0RGYyIDwtIGRhdGEudGFibGU6OmZyZWFkKCIuL291dHB1dC9kaXN0YW5jZURmMi5jc3YiKQp2YXJEZjIgPC0gZGF0YS50YWJsZTo6ZnJlYWQoIi4vb3V0cHV0L3ZhckRmMi5jc3YiKQpgYGAKCmBgYHtyfQphcnJvdzo6d3JpdGVfcGFycXVldChsb25nRGYyLCAifi9Eb2N1bWVudHMvR2l0SHViL1ByZWZlcmVuY2UtRmFsc2lmaWNhdGlvbi9tYWluL0FuYWx5c2lzL291dHB1dC9QRmZ1bGxEZjIucGFycXVldCIpCmFycm93Ojp3cml0ZV9wYXJxdWV0KGRpc3REZjIsICJ+L0RvY3VtZW50cy9HaXRIdWIvUHJlZmVyZW5jZS1GYWxzaWZpY2F0aW9uL21haW4vQW5hbHlzaXMvb3V0cHV0L2Rpc3RhbmNlRGYyLnBhcnF1ZXQiKQphcnJvdzo6d3JpdGVfcGFycXVldCh2YXJEZjIsICJ+L0RvY3VtZW50cy9HaXRIdWIvUHJlZmVyZW5jZS1GYWxzaWZpY2F0aW9uL21haW4vQW5hbHlzaXMvb3V0cHV0L3ZhckRmMi5wYXJxdWV0IikKYGBgCgpgYGB7cn0KbGlicmFyeShtaWNyb2JlbmNobWFyaykKc2V0d2QoIn4vR29vZ2xlIERyaXZlL1ZvbHVtZXMvUmVzZWFyY2ggUHJvamVjdC9QcmVmZXJlbmNlIEZhbHNpZmljYXRpb24vU3R1ZHkgMiBBbmFseXNpcy8iKQptaWNyb2JlbmNobWFyayhyZWFkLmNzdiA9IHJlYWQuY3N2KCIuL291dHB1dC9QRmZ1bGxEZjIuY3N2IiksCiAgICAgICAgICAgICAgIGZyZWFkID0gZGF0YS50YWJsZTo6ZnJlYWQoIi4vb3V0cHV0L1BGZnVsbERmMi5jc3YiKSwKICAgICAgICAgICAgICAgcmVhZF9wYXJxdWV0ID0gYXJyb3c6OnJlYWRfcGFycXVldCgifi9Eb2N1bWVudHMvR2l0SHViL1ByZWZlcmVuY2UtRmFsc2lmaWNhdGlvbi9tYWluL0FuYWx5c2lzL291dHB1dC9QRmZ1bGxEZjIucGFycXVldCIpKQpgYGAKCg==</div>
+<div id="rmd-source-code">LS0tCnRpdGxlOiAiUiBOb3RlYm9vayIKb3V0cHV0OiBodG1sX25vdGVib29rCi0tLQoKYGBge3J9CmxpYnJhcnkodGlkeXZlcnNlKQpsaWJyYXJ5KGhlcmUpCmhlcmU6OmlfYW0oIm1haW4vQ2xlYW5pbmcvY29udmVydFBhcnF1ZXQuUm1kIikKYGBgCgoKYGBge3J9CmRpci5jcmVhdGUoIn4vRG9jdW1lbnRzL0dpdEh1Yi9QcmVmZXJlbmNlLUZhbHNpZmljYXRpb24vbWFpbi9BbmFseXNpcy9vdXRwdXQvIikKYGBgCgoKIyBDb252ZXJ0IFN0dWR5IDEgdG8gUGFycXVldAoKYGBge3J9CnNldHdkKCJ+L0dvb2dsZSBEcml2ZS9Wb2x1bWVzL1Jlc2VhcmNoIFByb2plY3QvUHJlZmVyZW5jZSBGYWxzaWZpY2F0aW9uL0FuYWx5c2lzLyIpCmxvbmdEZjEgPC0gZGF0YS50YWJsZTo6ZnJlYWQoIi4vb3V0cHV0L1BGZnVsbERmLmNzdiIpCmRpc3REZjEgPC0gZGF0YS50YWJsZTo6ZnJlYWQoIi4vb3V0cHV0L2Rpc3RhbmNlRGYuY3N2IikKdmFyRGYxIDwtIGRhdGEudGFibGU6OmZyZWFkKCIuL291dHB1dC92YXJEZjEuY3N2IikKYGBgCgpgYGB7cn0KbG9uZ0RmMSA8LSBsb25nRGYxICU+JSBzZWxlY3QoaXNzdWVzLHN1YklELEluZm8sUmVwLGV2YWwsUG9saXQsUGFydHksU0VTOlN0YXR1cywgRXh0cmE6U0dPLnN3LCBDU0Vwcml2OlRoZXJtXzIsIGluVGhlcm0sIG91dFRoZXJtLCBhZmZQb2wsIGxhYmVsLFJlcHVibGljYW4uQXBwcm92YWwsIERlbW9jcmF0LkFwcHJvdmFsLCBpbkFwcCwgb3V0QXBwLCBwYXJ0eU4sIFJlcE4sIFRydW1wLCBsb29FdmFsSW4sIGxvb0V2YWxPdXQsIGJvb3RFdmFsSW4sIGJvb3RFdmFsT3V0LCBib290SW5PdXQsIHRvSW5HKQpkaXN0RGYxIDwtIGRpc3REZjEgJT4lIHNlbGVjdChzdWJJRCwgZGlzdCwgUmVwTiwgcGFydHlOLCBJbmZvLCBSZXAsIGNvcnIsIGFmZlBvbDpDU0VpZCwgUG9saXQ6cG9sU3RyZW5ndGgpCmBgYAoKCmBgYHtyfQphcnJvdzo6d3JpdGVfcGFycXVldChsb25nRGYxLCBoZXJlKCJtYWluIiwiZGF0YSIsIlBGZnVsbERmLnBhcnF1ZXQiKSkKYXJyb3c6OndyaXRlX3BhcnF1ZXQoZGlzdERmMSwgaGVyZSgibWFpbiIsImRhdGEiLCJkaXN0YW5jZURmLnBhcnF1ZXQiKSkKYXJyb3c6OndyaXRlX3BhcnF1ZXQodmFyRGYxLCBoZXJlKCJtYWluIiwiZGF0YSIsInZhckRmMS5wYXJxdWV0IikpCmBgYAoKIyBDb252ZXJ0IFN0dWR5IDIgdG8gUGFycXVldAoKYGBge3J9CnNldHdkKCJ+L0dvb2dsZSBEcml2ZS9Wb2x1bWVzL1Jlc2VhcmNoIFByb2plY3QvUHJlZmVyZW5jZSBGYWxzaWZpY2F0aW9uL1N0dWR5IDIgQW5hbHlzaXMvIikKbG9uZ0RmMiA8LSBkYXRhLnRhYmxlOjpmcmVhZCgiLi9vdXRwdXQvUEZmdWxsRGYyLmNzdiIpCmRpc3REZjIgPC0gZGF0YS50YWJsZTo6ZnJlYWQoIi4vb3V0cHV0L2Rpc3RhbmNlRGYyLmNzdiIpCnZhckRmMiA8LSBkYXRhLnRhYmxlOjpmcmVhZCgiLi9vdXRwdXQvdmFyRGYyLmNzdiIpCmBgYAoKYGBge3J9CmxvbmdEZjIgPC0gbG9uZ0RmMiAlPiUgc2VsZWN0KGlzc3VlcyxzdWJJRCxJbmZvLFJlcCxldmFsLFBvbGl0LFBhcnR5LEV4dHJhOlNHTy5zdywgQ1NFcHJpdjpUaGVybV8yLCBpblRoZXJtLCBvdXRUaGVybSwgYWZmUG9sLCBsYWJlbC54LFJlcHVibGljYW4uQXBwcm92YWwsIERlbW9jcmF0LkFwcHJvdmFsLCBpbkFwcCwgb3V0QXBwLCBwYXJ0eU4sIFJlcE4sIFRydW1wLCBsb29FdmFsSW4sIGxvb0V2YWxPdXQsIGJvb3RFdmFsSW4sIGJvb3RFdmFsT3V0LCBib290SW5PdXQsIHRvSW5HKQoKZGlzdERmMiA8LSBkaXN0RGYyICU+JSBzZWxlY3Qoc3ViSUQsIGRpc3QsIFJlcE4sIHBhcnR5TiwgSW5mbywgUmVwLCBjb3JyLCBhZmZQb2w6Q1NFaWQsIFBvbGl0Lng6cG9sU3RyZW5ndGgpCmBgYAoKCmBgYHtyfQphcnJvdzo6d3JpdGVfcGFycXVldChsb25nRGYyLCBoZXJlKCJtYWluIiwiZGF0YSIsIlBGZnVsbERmMi5wYXJxdWV0IikpCmFycm93Ojp3cml0ZV9wYXJxdWV0KGRpc3REZjIsIGhlcmUoIm1haW4iLCJkYXRhIiwiZGlzdGFuY2VEZjIucGFycXVldCIpKQphcnJvdzo6d3JpdGVfcGFycXVldCh2YXJEZjIsIGhlcmUoIm1haW4iLCJkYXRhIiwidmFyRGYyLnBhcnF1ZXQiKSkKYGBgCgpgYGB7cn0KbGlicmFyeShtaWNyb2JlbmNobWFyaykKc2V0d2QoIn4vR29vZ2xlIERyaXZlL1ZvbHVtZXMvUmVzZWFyY2ggUHJvamVjdC9QcmVmZXJlbmNlIEZhbHNpZmljYXRpb24vU3R1ZHkgMiBBbmFseXNpcy8iKQptaWNyb2JlbmNobWFyayhyZWFkLmNzdiA9IHJlYWQuY3N2KCIuL291dHB1dC9QRmZ1bGxEZjIuY3N2IiksCiAgICAgICAgICAgICAgIGZyZWFkID0gZGF0YS50YWJsZTo6ZnJlYWQoIi4vb3V0cHV0L1BGZnVsbERmMi5jc3YiKSwKICAgICAgICAgICAgICAgcmVhZF9wYXJxdWV0ID0gYXJyb3c6OnJlYWRfcGFycXVldCgifi9Eb2N1bWVudHMvR2l0SHViL1ByZWZlcmVuY2UtRmFsc2lmaWNhdGlvbi9tYWluL0FuYWx5c2lzL291dHB1dC9QRmZ1bGxEZjIucGFycXVldCIpKQpgYGAKCg==</div>
 
 
 
