@@ -8,6 +8,7 @@ output:
 ```{r}
 library(groundhog)
 pkgs <-  c("corrr","tidyverse","lme4","lmerTest", "ggeffects", "sjPlot", "insight", "data.table", "here", "arrow", "ggpubr", "wesanderson")
+library(grid)
 groundhog.day <- '2022-07-25'
 groundhog.library(pkgs, groundhog.day)
 here::i_am("main/Analysis/publicationPlots.Rmd")

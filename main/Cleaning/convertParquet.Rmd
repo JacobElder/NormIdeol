@@ -10,11 +10,6 @@ here::i_am("main/Cleaning/convertParquet.Rmd")
 ```
 
 
-```{r}
-dir.create("~/Documents/GitHub/Preference-Falsification/main/Analysis/output/")
-```
-
-
 # Convert Study 1 to Parquet
 
 ```{r}
@@ -25,7 +20,7 @@ varDf1 <- data.table::fread("./output/varDf1.csv")
 ```
 
 ```{r}
-longDf1 <- longDf1 %>% select(issues,subID,Info,Rep,eval,Polit,Party,SES:Status, Extra:SGO.sw, CSEpriv:Therm_2, inTherm, outTherm, affPol, label,Republican.Approval, Democrat.Approval, inApp, outApp, partyN, RepN, Trump, looEvalIn, looEvalOut, bootEvalIn, bootEvalOut, bootInOut, toInG)
+longDf1 <- longDf1 %>% select(issues,subID,Info,Rep,eval,Polit,Party,SES:Status, Extra:SGO.sw, CSEpriv:Therm_2, inTherm, outTherm, affPol, label,Republican.Approval, Democrat.Approval, inApp, outApp, inMinOut, partyN, RepN, Trump, looEvalIn, looEvalOut, bootEvalIn, bootEvalOut, bootInOut, toInG)
 distDf1 <- distDf1 %>% select(subID, dist, RepN, partyN, Info, Rep, corr, affPol:CSEid, Polit:polStrength)
 ```
 
@@ -46,7 +41,7 @@ varDf2 <- data.table::fread("./output/varDf2.csv")
 ```
 
 ```{r}
-longDf2 <- longDf2 %>% select(issues,subID,Info,Rep,eval,Polit,Party,Extra:SGO.sw, CSEpriv:Therm_2, inTherm, outTherm, affPol, label.x,Republican.Approval, Democrat.Approval, inApp, outApp, partyN, RepN, Trump, looEvalIn, looEvalOut, bootEvalIn, bootEvalOut, bootInOut, toInG)
+longDf2 <- longDf2 %>% select(issues,subID,Info,Rep,eval,Polit,Party,Extra:SGO.sw, CSEpriv:Therm_2, inTherm, outTherm, affPol, label.x,Republican.Approval, Democrat.Approval, inApp, outApp, inMinOut, partyN, RepN, Trump, looEvalIn, looEvalOut, bootEvalIn, bootEvalOut, bootInOut, toInG)
 
 distDf2 <- distDf2 %>% select(subID, dist, RepN, partyN, Info, Rep, corr, affPol:CSEid, Polit.x:polStrength)
 ```
@@ -58,11 +53,4 @@ arrow::write_parquet(distDf2, here("main","data","distanceDf2.parquet"))
 arrow::write_parquet(varDf2, here("main","data","varDf2.parquet"))
 ```
 
-```{r}
-library(microbenchmark)
-setwd("~/Google Drive/Volumes/Research Project/Preference Falsification/Study 2 Analysis/")
-microbenchmark(read.csv = read.csv("./output/PFfullDf2.csv"),
-               fread = data.table::fread("./output/PFfullDf2.csv"),
-               read_parquet = arrow::read_parquet("~/Documents/GitHub/Preference-Falsification/main/Analysis/output/PFfullDf2.parquet"))
-```
 
