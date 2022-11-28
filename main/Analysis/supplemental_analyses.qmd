@@ -79,7 +79,7 @@ longDf2$outDev <- abs(longDf2$eval - longDf2$bootEvalOut)
 
 ```{r, include = F}
 S1Issues <- as.data.frame(unique(longDf1$label))
-S2Issues <-as.data.frame(unique(longDf2$label.y))
+S2Issues <-as.data.frame(unique(longDf2$label.x))
 colnames(S1Issues)[1] <- "label"
 colnames(S2Issues)[1] <- "label"         
 
@@ -88,6 +88,13 @@ all_iss_col <- cbind(S1Issues, S2Issues)
 length(unique(unique(all_iss$label)))
 
 unique <- length(S1Issues[S1Issues$label %in% S2Issues$label,])
+
+i1<-cbind(setdiff(S1Issues$label, S2Issues$label),"Study 1")
+i12<-cbind(intersect(S1Issues$label, S2Issues$label),"Study 1 and Study 2")
+i2<-cbind(setdiff(S2Issues$label, S1Issues$label),"Study 2")
+is <- as.data.frame(rbind(i1,i12,i2))
+colnames(is) <- c("Issue", "Study")
+write.csv(is,here("main/data/studyIssuesList.csv"),row.names = F)
 ```
 
 # Demographics
@@ -130,7 +137,7 @@ polit_2 <- prop.table(table(longDf2$Polit))
 
 ## Coherence: Similarity of Issues Predicting Similarity of Evaluations
 
-### Main effect 
+### Main effect
 
 #### Study 1
 
