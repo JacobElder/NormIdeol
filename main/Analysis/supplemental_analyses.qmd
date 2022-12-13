@@ -133,6 +133,22 @@ polit_2 <- prop.table(table(longDf2$Polit))
 
 ```
 
+# Differences Between Timepoints in Affective Polarization
+
+```{r}
+indDiffs1<-as.data.frame(longDf1[!duplicated(longDf1$subID),])
+indDiffs2<-as.data.frame(longDf2[!duplicated(longDf2$subID),])
+
+ap1 <- indDiffs1 %>% select(subID,affPol)
+ap1$Study <- "Study 1"
+ap2 <- indDiffs2 %>% select(subID,affPol)
+ap2$Study <- "Study 2"
+apc <- rbind(ap1,ap2)
+
+t.test(affPol ~ Study, data=apc)
+psych::describeBy(apc$affPol,group=apc$Study,data=apc)
+```
+
 # Ideological Consistency Analyses
 
 ## Coherence: Similarity of Issues Predicting Similarity of Evaluations
