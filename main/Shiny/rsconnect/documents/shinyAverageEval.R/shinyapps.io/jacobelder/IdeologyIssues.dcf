@@ -1,0 +1,13 @@
+name: IdeologyIssues
+title:
+username:
+account: jacobelder
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 7955782
+bundleId: 6682223
+url: https://jacobelder.shinyapps.io/IdeologyIssues/
+when: 1672347391.7838
+lastSyncTime: 1672347391.78381
+asMultiple: FALSE
+asStatic: FALSE
