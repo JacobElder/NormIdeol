@@ -7,10 +7,11 @@ output:
 
 ```{r}
 library(groundhog)
-pkgs <-  c("corrr","tidyverse","lme4","lmerTest", "ggeffects", "sjPlot", "insight", "data.table", "here", "arrow", "ggpubr", "wesanderson")
+#pkgs <-  c("corrr","tidyverse","lme4","lmerTest", "ggeffects", "sjPlot", "insight", "data.table", "here", "arrow", "ggpubr", "wesanderson")
+pacman::p_load("corrr","tidyverse","lme4","lmerTest", "ggeffects", "sjPlot", "insight", "data.table", "here", "arrow", "ggpubr", "wesanderson")
 library(grid)
 groundhog.day <- '2022-07-25'
-groundhog.library(pkgs, groundhog.day)
+#groundhog.library(pkgs, groundhog.day)
 here::i_am("main/Analysis/publicationPlots.Rmd")
 ```
 
@@ -144,8 +145,8 @@ ggpredict(m, c("corr","Info"))%>% plot(add.data=T) + labs(title="Raw Data",x="Is
 ```{r}
 Sim.Info.Comb <- plotCommAxes(Sim.Info.S1, Sim.Info.S2, xaxis = "Issue Similarity", yaxis = "Rating Dissimilarity")
 Sim.Info.Comb
-ggsave(paste0(plotswd,objectName(Sim.Info.Comb),".png"), width = 9, height = 6, dpi=500, units="in")
-ggsave(paste0(plotswd,objectName(Sim.Info.Comb),".tiff"), width = 9, height = 6, dpi=500, units="in")
+ggsave(paste0(plotswd,objectName(Sim.Info.Comb),".jpg"), width = 9, height = 6, dpi=300, units="in")
+ggsave(paste0(plotswd,objectName(Sim.Info.Comb),".tiff"), width = 9, height = 6, dpi=300, units="in")
 ```
 
 # Affective Polarization and Similarity
@@ -208,15 +209,15 @@ ggpredict(m, c("corr","affPol"))%>% plot(add.data=T) + labs(title="Raw Data",x="
 ```{r}
 Sim.AffPol.Comb <- plotCommAxes(Sim.AffPol.S1, Sim.AffPol.S2, xaxis = "Issue Similarity", yaxis = "Rating Dissimilarity")
 Sim.AffPol.Comb
-ggsave(paste0(plotswd,objectName(Sim.AffPol.Comb),".png"), width = 9, height = 6, dpi=500, units="in")
-ggsave(paste0(plotswd,objectName(Sim.AffPol.Comb),".tiff"), width = 9, height = 6, dpi=500, units="in")
+ggsave(paste0(plotswd,objectName(Sim.AffPol.Comb),".jpg"), width = 9, height = 6, dpi=300, units="in")
+ggsave(paste0(plotswd,objectName(Sim.AffPol.Comb),".tiff"), width = 9, height = 6, dpi=300, units="in")
 ```
 
 ```{r}
 Sim.Comb <- ggarrange(Sim.AffPol.Comb, Sim.Info.Comb, nrow = 2, ncol = 1)
 Sim.Comb
-ggsave(paste0(plotswd,objectName(Sim.Comb),".png"), width = 10, height = 9, dpi=500, units="in")
-ggsave(paste0(plotswd,objectName(Sim.Comb),".tiff"), width = 10, height = 9, dpi=500, units="in")
+ggsave(paste0(plotswd,objectName(Sim.Comb),".jpg"), width = 10, height = 9, dpi=300, units="in")
+ggsave(paste0(plotswd,objectName(Sim.Comb),".tiff"), width = 10, height = 9, dpi=300, units="in")
 ```
 
 # Ideological Polarization
@@ -282,8 +283,8 @@ ggpredict(m, c("inMinOut","Info"))%>% plot(add.data=T) + labs(title="Raw Data",x
 ```{r}
 Norm.Info.Comb <- plotCommAxes(Norm.Info.S1, Norm.Info.S2, xaxis = "Inter-Party Favorability", yaxis = "Approval Rating")
 Norm.Info.Comb
-ggsave(paste0(plotswd,objectName(Norm.Info.Comb),".png"), width = 9, height = 6, dpi=500, units="in")
-ggsave(paste0(plotswd,objectName(Norm.Info.Comb),".tiff"), width = 9, height = 6, dpi=500, units="in")
+ggsave(paste0(plotswd,objectName(Norm.Info.Comb),".jpg"), width = 9, height = 6, dpi=300, units="in")
+ggsave(paste0(plotswd,objectName(Norm.Info.Comb),".tiff"), width = 9, height = 6, dpi=300, units="in")
 ```
 
 ## Affective Polarization
@@ -349,16 +350,16 @@ ggpredict(m, c("inMinOut","affPol"))%>% plot(add.data=T) + labs(title="Raw Data"
 ```{r}
 Norm.affPol.Comb <- plotCommAxes(Norm.affPol.S1, Norm.affPol.S2, xaxis = "Inter-Party Favorability", yaxis = "Approval Rating")
 Norm.affPol.Comb
-ggsave(paste0(plotswd,objectName(Norm.affPol.Comb),".png"), width = 9, height = 6, dpi=500, units="in")
-ggsave(paste0(plotswd,objectName(Norm.affPol.Comb),".tiff"), width = 9, height = 6, dpi=500, units="in")
+ggsave(paste0(plotswd,objectName(Norm.affPol.Comb),".jpg"), width = 9, height = 6, dpi=300, units="in")
+ggsave(paste0(plotswd,objectName(Norm.affPol.Comb),".tiff"), width = 9, height = 6, dpi=300, units="in")
 ```
 
 
 ```{r}
 Norm.Comb <- ggarrange(Norm.affPol.Comb, Norm.Info.Comb, nrow = 2, ncol = 1)
 Norm.Comb
-ggsave(paste0(plotswd,objectName(Norm.Comb),".png"), width = 10, height = 9, dpi=500, units="in")
-ggsave(paste0(plotswd,objectName(Norm.Comb),".tiff"), width = 10, height = 9, dpi=500, units="in")
+ggsave(paste0(plotswd,objectName(Norm.Comb),".jpg"), width = 10, height = 9, dpi=300, units="in")
+ggsave(paste0(plotswd,objectName(Norm.Comb),".tiff"), width = 10, height = 9, dpi=300, units="in")
 ```
 
 

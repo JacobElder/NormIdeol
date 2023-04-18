@@ -6,16 +6,19 @@ editor: visual
 ---
 
 ```{r, include =F, echo=F}
-library(groundhog)
-pkgs <-  c("heatmaply","pheatmap","gplots","RColorBrewer","tidyverse","arrow","here")
+#library(groundhog)
+#pkgs <-  c("heatmaply","pheatmap","gplots","RColorBrewer","tidyverse","arrow","here")
 groundhog.day <- '2022-07-25'
-groundhog.library(pkgs, groundhog.day)
-here::i_am("main/Analysis/reportingResults.Rmd")
+#groundhog.library(pkgs, groundhog.day)
+pacman::p_load("heatmaply","pheatmap","gplots","RColorBrewer","tidyverse","arrow","here")
+here::i_am("./main/Analysis/InteractiveHeatMap.qmd")
 ```
 
 ```{r, include =F, echo=F}
-longDf1 <- read_parquet(here("main","analysis","output","PFfullDf.parquet"))
-longDf2 <- read_parquet(here("main","analysis","output","PFfullDf2.parquet"))
+longDf1 <- read_parquet(here("main","data","PFfullDf.parquet"))
+longDf2 <- read_parquet(here("main","data","PFfullDf2.parquet"))
+
+plotswd <- ("/Volumes/GoogleDrive/My Drive/Volumes/Research Project/Preference Falsification/1+2Comb/Plots/")
 ```
 
 ## Study 1 Interactive Heat Map
@@ -33,8 +36,14 @@ corVector <- corMatZ[lower.tri(corMatZ)]
 colnames(corMat) <- longDf1$label[match(unique(longDf1$issues), longDf1$issues) ]
 rownames(corMat) <- longDf1$label[match(unique(longDf1$issues), longDf1$issues) ]
 
-outphm<-pheatmap(corMat, fontsize_row = 6, fontsize_col = 6, angle_col = 45, angle_row =45, width=100, height = 200 )
+```
 
+```{r}
+outphm<-pheatmap(corMat, cellheight = 5, cellwidth = 10, fontsize_row = 6, fontsize_col = 6, angle_col = 45, angle_row =45, width=100, height = 200 )
+
+png(paste0(plotswd,"heatmap1.jpeg"), width = 480, height = 260, units='mm', res = 300)
+  outphm
+dev.off()
 ```
 
 ```{r, echo=FALSE}
@@ -57,7 +66,14 @@ corVector <- corMatZ[lower.tri(corMatZ)]
 colnames(corMat) <- longDf2$label.x[match(unique(longDf2$issues), longDf2$issues) ]
 rownames(corMat) <- longDf2$label.x[match(unique(longDf2$issues), longDf2$issues) ]
 
-outphm<-pheatmap(corMat, fontsize_row = 6, fontsize_col = 6, angle_col = 45, angle_row =45, width=100, height = 200 )
+```
+
+```{r}
+outphm<-pheatmap(corMat, cellheight = 5, cellwidth = 10, fontsize_row = 6, fontsize_col = 6, angle_col = 45, angle_row =45, width=100, height = 200 )
+
+png(paste0(plotswd,"heatmap2.jpeg"), width = 480, height = 260, units='mm', res = 300)
+  outphm
+dev.off()
 ```
 
 ```{r, echo=FALSE}
