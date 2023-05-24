@@ -1,6 +1,6 @@
 ---
 title: "Interactive Heatmap of Correlations Among Issues"
-author: "Jacob Elder"
+author: "NA"
 format: html
 editor: visual
 ---
