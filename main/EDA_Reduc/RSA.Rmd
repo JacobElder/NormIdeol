@@ -8,7 +8,6 @@ pacman::p_load(tidyverse, corrr, ggplot2, lmerTest, ggeffects, sjPlot, tidyverse
 ```
 
 ```{r}
-setwd("/Volumes/GoogleDrive/My Drive/Volumes/Research Project/Preference Falsification/Analysis/")
 indDiffDf <- read.csv("./output/PFindDiffDf.csv")
 indDiffDf[c("Rep","Info", "partyN")] <- NULL
 #longDf <- read.csv("./output/PFfullDf.csv")
@@ -32,7 +31,6 @@ shortDf1 <- longDf[!duplicated(longDf$subID),]
 ```
 
 ```{r, include=FALSE}
-setwd("~/Google Drive/Volumes/Research Project/Preference Falsification/Study 2 Analysis/")
 indDiffDf2 <- read.csv("./output/PFindDiffDf2.csv")
 longDf2 <- read.csv("./output/PFfullDf2.csv")
 issExpDf2 <- read.csv("./output/issueAgDf2.csv")
@@ -74,25 +72,17 @@ dev.off()
 ```
 
 ```{r}
-jpeg("~/Desktop/test.png", height=12, width=30, units="in",res=300)
 outphm<-pheatmap(corMat, fontsize_row = 6, fontsize_col = 6, angle_col = 45, angle_row =45, width=100, height = 200 )
-outphm
-dev.off()
 outphm
 ```
 
 ```{r}
 out<-heatmaply::ggheatmap(corMat, grid_gap=2, colorbar_len=50, grid_size = 5 , Rowv=outphm[[1]], Colv=outphm[[2]], revC=TRUE, fontsize_row = 8.5, fontsize_col = 8.5, angle_col = 45, angle_row =45,  limits = c(-1, 1), colors = colorRampPalette(rev(brewer.pal(n = 7, name = "RdYlBu")))(100))
-jpeg("~/Desktop/test.png", height=15, width=20, units="in",res=300)
-out
-dev.off()
 ```
 
 ```{r}
 library(RColorBrewer)
 out<-heatmaply::ggheatmap(corMat, colorbar_len=50, grid_size = 5 , Rowv=outphm[[1]], Colv=outphm[[2]], revC=TRUE, fontsize_row = 8.5, fontsize_col = 8.5, angle_col = 45, angle_row =45,  limits = c(-1, 1), colors = colorRampPalette(rev(brewer.pal(n = 7, name = "RdYlBu")))(100))
-out
-ggsave("~/Desktop/test2.png", dpi=300,units="in",height=20,width=20)
 ```
 
 
@@ -230,24 +220,18 @@ dev.off()
 ```
 
 ```{r}
-jpeg("~/Desktop/test.png", height=12, width=30, units="in",res=300)
 outphm<-pheatmap(corMat, fontsize_row = 6, fontsize_col = 6, angle_col = 45, angle_row =45, width=100, height = 200 )
-outphm
-dev.off()
-outphm
+
 ```
 
 ```{r}
 out<-heatmaply::ggheatmap(corMat, grid_gap=2, colorbar_len=50, grid_size = 5 , Rowv=outphm[[1]], Colv=outphm[[2]], revC=TRUE, fontsize_row = 8.5, fontsize_col = 8.5, angle_col = 45, angle_row =45,  limits = c(-1, 1), colors = colorRampPalette(rev(brewer.pal(n = 7, name = "RdYlBu")))(100))
-jpeg("~/Desktop/test.png", height=15, width=20, units="in",res=300)
-out
-dev.off()
+
 ```
 
 ```{r}
 out<-heatmaply::ggheatmap(corMat, colorbar_len=50, grid_size = 5 , Rowv=outphm[[1]], Colv=outphm[[2]], revC=TRUE, fontsize_row = 8.5, fontsize_col = 8.5, angle_col = 45, angle_row =45,  limits = c(-1, 1), colors = colorRampPalette(rev(brewer.pal(n = 7, name = "RdYlBu")))(100))
-out
-ggsave("~/Desktop/test2.png", dpi=300,units="in",height=20,width=20)
+
 ```
 
 
@@ -364,8 +348,4 @@ fullDistDf2 <- merge(fullDistDf2, indDiffDf2, by = "subID")
 fullDistDf2$polStrength <- abs(4-fullDistDf2$Polit.x)
 
 fullDistDf2 <- fullDistDf2 %>% select(subID, dist, RepN, partyN, Info, Rep, corr, distSTrans, distETrans, affPol:falsify, Polit.x, polStrength)
-
-write.csv(fullDistDf2, "/Volumes/GoogleDrive/My Drive/Volumes/Research Project/Preference Falsification/Study 2 Analysis/output/distanceDf2.csv")
-
-arrow::write_parquet(fullDistDf2, "/Volumes/GoogleDrive/My Drive/Volumes/Research Project/Preference Falsification/Study 2 Analysis/output/distanceDf2.parquet")
 ```
